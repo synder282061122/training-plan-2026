@@ -17,6 +17,27 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+// Pre-init Firebase immediately after SDK loads
+window.__firebaseReady = false;
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    if (typeof firebase !== 'undefined') {
+      if (!firebase.apps.length) firebase.initializeApp({
+        apiKey: "AIzaSyCZuxKdhz795UQg_kR3AnnLtS81a-G43F8",
+        authDomain: "training-plan-2026.firebaseapp.com",
+        databaseURL: "https://training-plan-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "training-plan-2026",
+        storageBucket: "training-plan-2026.firebasestorage.app",
+        messagingSenderId: "99734970166",
+        appId: "1:99734970166:web:e5a5d7fe97a0735c2d1d97"
+      });
+      window.__firebaseDB = firebase.database();
+      window.__firebaseReady = true;
+    }
+  } catch(e) { console.warn('Firebase pre-init:', e); }
+});
+</script>
 <style>
 /* ==================== TOKENS ==================== */
 :root{
@@ -1838,15 +1859,24 @@ let realtimeListener = null;
 
 function initFirebase() {
   try {
-    if (!firebase.apps.length) {
-      firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
-    } else {
-      firebaseApp = firebase.app();
+    // Use pre-initialized instance if available
+    if (window.__firebaseReady && window.__firebaseDB) {
+      firebaseDB = window.__firebaseDB;
+      syncEnabled = true;
+      setSyncStatus('ok', 'Firebase พร้อม');
+      return true;
     }
-    firebaseDB = firebase.database();
-    syncEnabled = true;
-    setSyncStatus('ok', 'Firebase พร้อม');
-    return true;
+    // Fallback: try to init directly
+    if (typeof firebase !== 'undefined') {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(FIREBASE_CONFIG);
+      }
+      firebaseDB = firebase.database();
+      syncEnabled = true;
+      setSyncStatus('ok', 'Firebase พร้อม');
+      return true;
+    }
+    throw new Error('Firebase SDK not loaded');
   } catch(e) {
     console.error('Firebase init error:', e);
     setSyncStatus('error', 'Firebase เชื่อมต่อไม่ได้');
