@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -630,6 +630,15 @@ input:checked+.slider:before{transform:translateX(19px);}
 
   .cal-ev-pill{display:none;}
   .cal-cell .ev-dots-mobile{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px;}
+
+  /* Mobile calendar — show mini text pills instead of dots */
+  .cal-cell{min-height:72px;}
+  .ev-dots-m{display:none!important;}
+  .cal-ev-pill-mobile{
+    font-size:0.55rem;font-weight:700;padding:1px 4px;border-radius:3px;
+    display:block;margin:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    max-width:100%;line-height:1.4;
+  }
 
   /* Home right sidebar hidden on mobile — show inline */
   .home-right{display:none;}
@@ -1312,9 +1321,21 @@ function renderMonthly(){
     const numEl=document.createElement('span');numEl.className='cal-num';numEl.textContent=d;c.appendChild(numEl);
     if(evs.length){
       if(isMobile){
-        const dots=document.createElement('div');dots.className='ev-dots-m';
-        evs.slice(0,4).forEach(ev=>{const dot=document.createElement('div');dot.className='ev-dot '+(TYPE_META[ev.type]?.dot||'dot-act');dots.appendChild(dot);});
-        c.appendChild(dots);
+        evs.slice(0,2).forEach(ev=>{
+          const mt=TYPE_META[ev.type]||TYPE_META.activity;
+          const pill=document.createElement('span');
+          pill.className='cal-ev-pill-mobile';
+          pill.style=mt.color;
+          pill.textContent=mt.icon+' '+ev.text.substring(0,10);
+          c.appendChild(pill);
+        });
+        if(evs.length>2){
+          const more=document.createElement('span');
+          more.className='cal-ev-pill-mobile';
+          more.style='color:var(--text3)';
+          more.textContent='+'+( evs.length-2);
+          c.appendChild(more);
+        }
       } else {
         evs.forEach(ev=>{
           const mt=TYPE_META[ev.type]||TYPE_META.activity;
@@ -1434,7 +1455,7 @@ function renderAnnual(){
   for(let m=1;m<=12;m++){
     const dim=daysInMonth(m),firstDay=new Date(YEAR,m-1,1).getDay();
     const card=document.createElement('div');card.className='amc';
-    card.innerHTML=`<div class="amc-hdr"><span class="amc-abbr">${MONTHS_ABB[m-1]}</span><span class="amc-name">${MONTHS_TH[m-1]}</span><button class="amc-edit" onclick="openTrainingModal(${m})">✏</button></div>`;
+    card.innerHTML=`<div class="amc-hdr"><span class="amc-abbr">${MONTHS_ABB[m-1]}</span><span class="amc-name">${MONTHS_TH[m-1]}</span><button class="amc-edit admin-only" onclick="openTrainingModal(${m})">✏</button></div>`;
     const wdRow=document.createElement('div');wdRow.className='amc-wd-row';
     ['อา','จ','อ','พ','พฤ','ศ','ส'].forEach(w=>{const d=document.createElement('div');d.className='amc-wd';d.textContent=w;wdRow.appendChild(d);});
     card.appendChild(wdRow);
