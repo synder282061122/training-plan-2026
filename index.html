@@ -15,10 +15,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-app-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-database-compat.min.js"></script>
 <script>
-// Pre-init Firebase immediately after SDK loads
 window.__firebaseReady = false;
 document.addEventListener('DOMContentLoaded', function() {
   try {
@@ -1072,7 +1071,7 @@ input:checked+.slider:before{transform:translateX(19px);}
     <div class="bs-body">
       <div style="font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;">กิจกรรม</div>
       <div id="bs-ev-list"></div>
-      <div class="add-ev-box" style="margin-top:8px;background:var(--surf2);border-radius:9px;padding:10px 12px;border:1px solid var(--border);">
+      <div class="add-ev-box admin-only" id="bs-add-box" style="margin-top:8px;background:var(--surf2);border-radius:9px;padding:10px 12px;border:1px solid var(--border);">
         <div style="font-size:0.68rem;font-weight:700;color:var(--text2);margin-bottom:7px;">เพิ่มกิจกรรม</div>
         <div class="type-chips" id="mobile-chips" style="margin-bottom:8px;"></div>
         <div class="add-row">
@@ -1083,8 +1082,8 @@ input:checked+.slider:before{transform:translateX(19px);}
       </div>
     </div>
     <div class="bs-foot">
-      <button class="bs-cancel" onclick="closeBS()">ยกเลิก</button>
-      <button class="bs-save" onclick="mobileSaveDay()">✓ บันทึก</button>
+      <button class="bs-cancel" onclick="closeBS()">ปิด</button>
+      <button class="bs-save admin-only" onclick="mobileSaveDay()">✓ บันทึก</button>
     </div>
   </div>
 </div>
@@ -1383,9 +1382,10 @@ function openDayDesk(m,d){
   document.getElementById('cdd-title').textContent=`${d} ${MONTHS_TH[m-1]} ${YEAR}`;
   document.getElementById('cdd-sub').textContent=`${DAYS_TH[wd]} · ${MONTHS_ABB[m-1]} ${d}`;
   document.getElementById('d-note').value=STATE.notes[evKey(m,d)]||'';
-  document.getElementById('cdd-add-box').style.display='block';
+  // Only admin sees the add box
+  document.getElementById('cdd-add-box').style.display=USER_ROLE==='admin'?'block':'none';
   renderCddEvList();
-  buildChips('desktop-chips','desk');
+  if(USER_ROLE==='admin') buildChips('desktop-chips','desk');
 }
 function renderCddEvList(){
   const evs=STATE.events[evKey(editM,editD)]||[];
@@ -1394,7 +1394,8 @@ function renderCddEvList(){
   evs.forEach((ev,i)=>{
     const mt=TYPE_META[ev.type]||TYPE_META.activity;
     const row=document.createElement('div');row.className='cdd-ev';
-    row.innerHTML=`<span class="cdd-badge" style="${mt.color}">${mt.icon} ${mt.label}</span><span class="cdd-name">${ev.text}</span><button class="cdd-del" onclick="deskRemoveEv(${i})">✕</button>`;
+    const delBtn=USER_ROLE==='admin'?`<button class="cdd-del" onclick="deskRemoveEv(${i})">✕</button>`:'';
+    row.innerHTML=`<span class="cdd-badge" style="${mt.color}">${mt.icon} ${mt.label}</span><span class="cdd-name">${ev.text}</span>${delBtn}`;
     el.appendChild(row);
   });
 }
@@ -1431,7 +1432,8 @@ function renderBsEvList(){
   evs.forEach((ev,i)=>{
     const mt=TYPE_META[ev.type]||TYPE_META.activity;
     const row=document.createElement('div');row.className='cdd-ev';
-    row.innerHTML=`<span class="cdd-badge" style="${mt.color}">${mt.icon} ${mt.label}</span><span class="cdd-name">${ev.text}</span><button class="cdd-del" onclick="bsRemoveEv(${i})">✕</button>`;
+    const delBtn=USER_ROLE==='admin'?`<button class="cdd-del" onclick="bsRemoveEv(${i})">✕</button>`:'';
+    row.innerHTML=`<span class="cdd-badge" style="${mt.color}">${mt.icon} ${mt.label}</span><span class="cdd-name">${ev.text}</span>${delBtn}`;
     el.appendChild(row);
   });
 }
@@ -1476,7 +1478,7 @@ function renderAnnual(){
   for(let m=1;m<=12;m++){
     const dim=daysInMonth(m),firstDay=new Date(YEAR,m-1,1).getDay();
     const card=document.createElement('div');card.className='amc';
-    card.innerHTML=`<div class="amc-hdr"><span class="amc-abbr">${MONTHS_ABB[m-1]}</span><span class="amc-name">${MONTHS_TH[m-1]}</span><button class="amc-edit admin-only" onclick="openTrainingModal(${m})">✏</button></div>`;
+    card.innerHTML=`<div class="amc-hdr"><span class="amc-abbr">${MONTHS_ABB[m-1]}</span><span class="amc-name">${MONTHS_TH[m-1]}</span>${USER_ROLE==='admin'?`<button class="amc-edit admin-only" onclick="openTrainingModal(${m})">✏</button>`:''}</div>`;
     const wdRow=document.createElement('div');wdRow.className='amc-wd-row';
     ['อา','จ','อ','พ','พฤ','ศ','ส'].forEach(w=>{const d=document.createElement('div');d.className='amc-wd';d.textContent=w;wdRow.appendChild(d);});
     card.appendChild(wdRow);
@@ -1821,9 +1823,9 @@ function doLogout() {
 
 function applyRoleUI() {
   const isAdmin = USER_ROLE === 'admin';
-  // Show/hide edit controls
-  const editEls = document.querySelectorAll('.admin-only');
-  editEls.forEach(el => el.style.display = isAdmin ? '' : 'none');
+
+  // Show/hide admin-only elements
+  document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? '' : 'none');
 
   // Role badge
   const badge = isAdmin
@@ -1832,12 +1834,12 @@ function applyRoleUI() {
   const bd = document.getElementById('role-badge-desk');
   if (bd) bd.innerHTML = badge;
 
-  // Disable edit buttons for staff
+  // For staff: hide add/edit boxes in calendar side panel
   if (!isAdmin) {
-    document.querySelectorAll('.cal-cell, .amc-cell, .mcell').forEach(el => {
-      el.style.cursor = 'default';
-      el.onclick = null;
-    });
+    const addBox = document.getElementById('cdd-add-box');
+    if (addBox) addBox.style.display = 'none';
+    const tscEdit = document.getElementById('tsc-edit-btn');
+    if (tscEdit) tscEdit.style.display = 'none';
   }
 }
 
