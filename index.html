@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -1421,7 +1421,12 @@ function openDayMobile(m,d){
   document.getElementById('bs-title').textContent=`${d} ${MONTHS_TH[m-1]} ${YEAR}`;
   document.getElementById('bs-sub').textContent=`${DAYS_TH[wd]} · ${MONTHS_ABB[m-1]} ${d}`;
   document.getElementById('m-note').value=STATE.notes[evKey(m,d)]||'';
-  buildChips('mobile-chips','mobile');
+  // Show/hide add box and save button based on role
+  const bsAddBox=document.getElementById('bs-add-box');
+  const bsSave=document.querySelector('#bs-overlay .bs-save');
+  if(bsAddBox)bsAddBox.style.display=USER_ROLE==='admin'?'block':'none';
+  if(bsSave)bsSave.style.display=USER_ROLE==='admin'?'':'none';
+  if(USER_ROLE==='admin')buildChips('mobile-chips','mobile');
   renderBsEvList();
   document.getElementById('bs-overlay').classList.add('open');
 }
@@ -1824,8 +1829,12 @@ function doLogout() {
 function applyRoleUI() {
   const isAdmin = USER_ROLE === 'admin';
 
-  // Show/hide admin-only elements
-  document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? '' : 'none');
+  // Show/hide admin-only elements in sidebar and header
+  document.querySelectorAll('.admin-only').forEach(el => {
+    // Skip elements that are controlled per-interaction
+    if (el.id === 'cdd-add-box' || el.id === 'tsc-edit-btn' || el.id === 'bs-add-box') return;
+    el.style.display = isAdmin ? '' : 'none';
+  });
 
   // Role badge
   const badge = isAdmin
@@ -1834,13 +1843,13 @@ function applyRoleUI() {
   const bd = document.getElementById('role-badge-desk');
   if (bd) bd.innerHTML = badge;
 
-  // For staff: hide add/edit boxes in calendar side panel
-  if (!isAdmin) {
-    const addBox = document.getElementById('cdd-add-box');
-    if (addBox) addBox.style.display = 'none';
-    const tscEdit = document.getElementById('tsc-edit-btn');
-    if (tscEdit) tscEdit.style.display = 'none';
-  }
+  // tsc-edit-btn (Training Summary edit) — control by role
+  const tscEdit = document.getElementById('tsc-edit-btn');
+  if (tscEdit) tscEdit.style.display = isAdmin ? '' : 'none';
+
+  // cdd-add-box starts hidden — shown only when admin clicks a day
+  const addBox = document.getElementById('cdd-add-box');
+  if (addBox) addBox.style.display = 'none';
 }
 
 // ==================== CLOUD SYNC (Firebase Realtime Database) ====================
