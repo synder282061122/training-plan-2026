@@ -14,6 +14,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
 /* ==================== TOKENS ==================== */
 :root{
@@ -761,29 +764,13 @@ input:checked+.slider:before{transform:translateX(19px);}
     <button class="login-btn" id="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ Admin</button>
     <div class="login-error" id="login-error"></div>
     <!-- Cloud status on login -->
-    <div id="login-sync-status" style="margin-top:14px;padding:10px 12px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:0.72rem;color:#166534;display:none;">
-      ✅ Cloud Sync พร้อมใช้งาน
+    <div id="login-sync-status" style="margin-top:14px;padding:10px 12px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:0.72rem;color:#166534;line-height:1.6;">
+      ☁️ <strong>Firebase Cloud Sync พร้อมใช้งาน</strong><br>
+      <span style="color:#15803d;">เปิดลิงก์เดียวกันทุกเครื่อง — ข้อมูลอัปเดตอัตโนมัติ ไม่ต้องตั้งค่าเพิ่ม</span>
     </div>
-    <div id="login-nosync-status" style="margin-top:14px;padding:10px 12px;border-radius:10px;background:#fef3c7;border:1px solid #fcd34d;font-size:0.72rem;color:#92400e;line-height:1.6;">
-      ⚠️ ยังไม่ได้ตั้งค่า Cloud Sync<br>
-      <span style="color:#b45309;">ข้อมูลจะบันทึกเฉพาะอุปกรณ์นี้</span>
-      <button onclick="toggleGistSetup()" style="display:block;margin-top:6px;width:100%;padding:6px;border:1.5px solid #f59e0b;border-radius:7px;background:#fffbeb;color:#92400e;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;">⚙️ ตั้งค่า Cloud Sync</button>
-    </div>
-    <!-- Gist Quick Setup -->
-    <div id="gist-quick-setup" style="display:none;margin-top:12px;padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;text-align:left;">
-      <div style="font-size:0.75rem;font-weight:700;color:#0f1e33;margin-bottom:8px;">☁️ ตั้งค่า GitHub Gist</div>
-      <div style="font-size:0.68rem;color:#64748b;line-height:1.7;margin-bottom:8px;">
-        1. ไปที่ <a href="https://gist.github.com" target="_blank" style="color:#2563eb;">gist.github.com</a> → New Gist<br>
-        2. ชื่อไฟล์: <code style="background:#e2e8f0;padding:1px 4px;border-radius:3px;">training_plan_2026.json</code> เนื้อหา: <code style="background:#e2e8f0;padding:1px 4px;border-radius:3px;">{}</code><br>
-        3. กด Create secret gist → Copy ID จาก URL<br>
-        4. <a href="https://github.com/settings/tokens" target="_blank" style="color:#2563eb;">github.com/settings/tokens</a> → New classic token → เลือก gist
-      </div>
-      <input id="qs-gist-id" style="width:100%;border:1.5px solid #e2e8f0;border-radius:7px;padding:7px 10px;font-size:0.78rem;font-family:monospace;margin-bottom:6px;outline:none;box-sizing:border-box;" placeholder="Gist ID (32 ตัวอักษร)">
-      <input id="qs-token" type="password" style="width:100%;border:1.5px solid #e2e8f0;border-radius:7px;padding:7px 10px;font-size:0.78rem;font-family:monospace;margin-bottom:8px;outline:none;box-sizing:border-box;" placeholder="GitHub Token (ghp_...)">
-      <button onclick="quickSaveGist()" style="width:100%;padding:8px;border:none;border-radius:7px;background:#2563eb;color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;">💾 บันทึกและเชื่อมต่อ</button>
-    </div>
+    <div id="login-nosync-status" style="display:none;"></div>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;font-size:0.68rem;color:#94a3b8;">
-      v2.1 · Training Plan 2026 · Suan Son Loi Resort
+      v3.0 · Firebase Realtime Sync · Suan Son Loi Resort
     </div>
   </div>
 </div>
@@ -1009,25 +996,19 @@ input:checked+.slider:before{transform:translateX(19px);}
             </div>
           </div>
           <div class="settings-section admin-only">
-            <div class="settings-section-title">☁️ ตั้งค่า Cloud Sync</div>
+            <div class="settings-section-title">☁️ Cloud Sync (Firebase)</div>
             <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px;">
-              <p style="font-size:0.78rem;color:var(--text2);margin-bottom:10px;line-height:1.6;">เชื่อมต่อ GitHub Gist เพื่อ Sync ข้อมูลระหว่าง Admin และ Staff ผ่านลิงก์เดียวกัน</p>
-              <div style="margin-bottom:8px;">
-                <label style="font-size:0.72rem;font-weight:700;color:var(--text2);">Gist ID</label>
-                <input id="cfg-gist-id" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:0.82rem;font-family:monospace;margin-top:3px;outline:none;" placeholder="abc123def456..." value="">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <div style="width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>
+                <span style="font-size:0.82rem;font-weight:700;color:var(--green);">เชื่อมต่อ Firebase แล้ว</span>
               </div>
-              <div style="margin-bottom:10px;">
-                <label style="font-size:0.72rem;font-weight:700;color:var(--text2);">GitHub Token</label>
-                <input id="cfg-token" type="password" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:0.82rem;font-family:monospace;margin-top:3px;outline:none;" placeholder="ghp_xxxx..." value="">
-              </div>
-              <button onclick="saveGistConfig()" style="width:100%;padding:10px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;">💾 บันทึกการตั้งค่า Cloud</button>
-              <button onclick="testSync()" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;margin-top:6px;">🔄 ทดสอบ Sync</button>
-              <div style="margin-top:10px;padding:10px;background:#fef3c7;border-radius:8px;font-size:0.7rem;color:#92400e;line-height:1.7;">
-                <strong>📋 วิธีตั้งค่า:</strong><br>
-                1. ไปที่ <strong>gist.github.com</strong> → สร้าง Gist ใหม่ → ตั้งชื่อไฟล์ว่า <code>training_plan_2026.json</code> → เนื้อหาใส่ <code>{}</code><br>
-                2. Copy <strong>Gist ID</strong> จาก URL (ตัวเลข-ตัวอักษรท้าย URL)<br>
-                3. ไปที่ <strong>github.com/settings/tokens</strong> → New classic token → เลือก <strong>gist</strong> → Generate → Copy token<br>
-                4. ใส่ค่าด้านบนแล้วกด บันทึก
+              <p style="font-size:0.78rem;color:var(--text2);margin-bottom:12px;line-height:1.6;">ข้อมูลซิงค์อัตโนมัติทุกครั้งที่กด <strong>บันทึก</strong> — ทุกอุปกรณ์จะอัปเดตทันที ไม่ต้องตั้งค่าเพิ่ม</p>
+              <button onclick="testSync()" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;">🔄 ทดสอบการเชื่อมต่อ</button>
+              <div style="margin-top:10px;padding:10px;background:var(--green-bg);border-radius:8px;font-size:0.7rem;color:#166534;line-height:1.7;">
+                <strong>✅ วิธีใช้:</strong><br>
+                Admin กด 💾 บันทึก → ข้อมูลขึ้น Firebase<br>
+                Staff เปิดลิงก์ → เห็นข้อมูลล่าสุดอัตโนมัติ<br>
+                ไม่ต้อง Import/Export ไม่ต้อง Token ใดๆ
               </div>
             </div>
           </div>
@@ -1818,66 +1799,71 @@ function applyRoleUI() {
   }
 }
 
-// ==================== CLOUD SYNC (GitHub Gist) ====================
-// ใช้ GitHub Gist เป็น Free Cloud Database
-// Admin save → push to Gist → Staff load ← pull from Gist
-const GIST_CONFIG = {
-  // ตั้งค่า Gist ID และ Token สำหรับ sync
-  // 1. ไปที่ gist.github.com → สร้าง Gist ใหม่ → copy Gist ID จาก URL
-  // 2. ไปที่ github.com/settings/tokens → New token → กด "gist" → Generate → copy token
-  gistId: 'YOUR_GIST_ID',     // ← ใส่ Gist ID ที่นี่
-  token: 'YOUR_GITHUB_TOKEN', // ← ใส่ GitHub Token ที่นี่
-  filename: 'training_plan_2026.json'
+// ==================== CLOUD SYNC (Firebase Realtime Database) ====================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCZuxKdhz795UQg_kR3AnnLtS81a-G43F8",
+  authDomain: "training-plan-2026.firebaseapp.com",
+  databaseURL: "https://training-plan-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "training-plan-2026",
+  storageBucket: "training-plan-2026.firebasestorage.app",
+  messagingSenderId: "99734970166",
+  appId: "1:99734970166:web:e5a5d7fe97a0735c2d1d97"
 };
 
-let syncEnabled = GIST_CONFIG.gistId !== 'YOUR_GIST_ID';
+let firebaseApp = null;
+let firebaseDB = null;
+let syncEnabled = false;
+let realtimeListener = null;
+
+function initFirebase() {
+  try {
+    if (!firebase.apps.length) {
+      firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+    } else {
+      firebaseApp = firebase.app();
+    }
+    firebaseDB = firebase.database();
+    syncEnabled = true;
+    setSyncStatus('ok', 'Firebase พร้อม');
+    return true;
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    setSyncStatus('error', 'Firebase เชื่อมต่อไม่ได้');
+    return false;
+  }
+}
 
 function setSyncStatus(status, msg) {
-  const badges = ['sync-badge-desk'];
-  badges.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.style.display = 'flex';
-    el.className = 'sync-indicator ' + (status === 'ok' ? 'sync-ok' : status === 'loading' ? 'sync-loading' : 'sync-error');
-    el.innerHTML = status === 'loading' ? `<span class="spin">⟳</span> ${msg}` : (status === 'ok' ? `✅ ${msg}` : `❌ ${msg}`);
-  });
+  const el = document.getElementById('sync-badge-desk');
+  if (!el) return;
+  el.style.display = 'flex';
+  el.className = 'sync-indicator ' + (status === 'ok' ? 'sync-ok' : status === 'loading' ? 'sync-loading' : 'sync-error');
+  el.innerHTML = status === 'loading' ? `<span class="spin">⟳</span> ${msg}` : (status === 'ok' ? `✅ ${msg}` : `❌ ${msg}`);
 }
 
 async function cloudLoad() {
-  if (!syncEnabled) return null;
+  if (!syncEnabled || !firebaseDB) return null;
   try {
     setSyncStatus('loading', 'กำลังโหลด...');
-    const res = await fetch(`https://api.github.com/gists/${GIST_CONFIG.gistId}`, {
-      headers: { 'Authorization': `token ${GIST_CONFIG.token}`, 'Accept': 'application/vnd.github.v3+json' }
-    });
-    if (!res.ok) throw new Error('Load failed');
-    const data = await res.json();
-    const content = data.files[GIST_CONFIG.filename]?.content;
-    if (content) {
-      const parsed = JSON.parse(content);
+    const snap = await firebaseDB.ref('tplan2026').once('value');
+    const data = snap.val();
+    if (data) {
       setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}));
-      return parsed;
+      return data;
     }
+    setSyncStatus('ok', 'พร้อมใช้งาน');
+    return null;
   } catch(e) {
     setSyncStatus('error', 'โหลดไม่สำเร็จ');
+    return null;
   }
-  return null;
 }
 
 async function cloudSave(state) {
-  if (!syncEnabled) { setSyncStatus('error', 'ยังไม่ได้ตั้งค่า Gist'); return false; }
+  if (!syncEnabled || !firebaseDB) { setSyncStatus('error', 'Firebase ไม่พร้อม'); return false; }
   try {
     setSyncStatus('loading', 'กำลังบันทึก...');
-    const res = await fetch(`https://api.github.com/gists/${GIST_CONFIG.gistId}`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `token ${GIST_CONFIG.token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.github.v3+json'
-      },
-      body: JSON.stringify({ files: { [GIST_CONFIG.filename]: { content: JSON.stringify(state, null, 2) } } })
-    });
-    if (!res.ok) throw new Error('Save failed');
+    await firebaseDB.ref('tplan2026').set(state);
     setSyncStatus('ok', 'Saved ' + new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}));
     return true;
   } catch(e) {
@@ -1886,19 +1872,32 @@ async function cloudSave(state) {
   }
 }
 
+function startRealtimeSync() {
+  if (!syncEnabled || !firebaseDB) return;
+  if (realtimeListener) realtimeListener();
+  realtimeListener = firebaseDB.ref('tplan2026').on('value', snap => {
+    const data = snap.val();
+    if (data) {
+      STATE = data;
+      try { localStorage.setItem('tplan2026', JSON.stringify(STATE)); } catch(e) {}
+      renderAll();
+      setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}));
+    }
+  });
+}
+
 async function startApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('root').style.display = 'flex';
 
-  // Load from cloud first
-  if (syncEnabled) {
-    const cloudData = await cloudLoad();
-    if (cloudData) {
-      STATE = cloudData;
-      try { localStorage.setItem('tplan2026', JSON.stringify(STATE)); } catch(e) {}
-    }
-  } else {
-    setSyncStatus('error', 'ไม่ได้ตั้งค่า Cloud');
+  // Init Firebase
+  initFirebase();
+
+  // Load latest data from Firebase
+  const cloudData = await cloudLoad();
+  if (cloudData) {
+    STATE = cloudData;
+    try { localStorage.setItem('tplan2026', JSON.stringify(STATE)); } catch(e) {}
   }
 
   applyRoleUI();
@@ -1906,83 +1905,30 @@ async function startApp() {
   renderMonthly();
   initShareSection();
 
-  // Auto-refresh every 5 min for staff
-  if (USER_ROLE === 'staff' && syncEnabled) {
-    setInterval(async () => {
-      const d = await cloudLoad();
-      if (d) { STATE = d; renderAll(); }
-    }, 5 * 60 * 1000);
+  // Staff: listen realtime — auto-update when admin saves
+  if (USER_ROLE === 'staff') {
+    startRealtimeSync();
   }
 }
 
-
-function saveGistConfig(){
-  const gistId=document.getElementById('cfg-gist-id').value.trim();
-  const token=document.getElementById('cfg-token').value.trim();
-  if(!gistId||!token){toast('กรุณาใส่ Gist ID และ Token',true);return;}
-  GIST_CONFIG.gistId=gistId;
-  GIST_CONFIG.token=token;
-  syncEnabled=true;
-  try{localStorage.setItem('tplan_gist',JSON.stringify({gistId,token}));}catch(e){}
-  toast('✅ บันทึกการตั้งค่า Cloud แล้ว');
-}
-
+// Legacy stubs (ไม่ใช้แล้ว แต่เผื่อมีที่อ้างถึง)
+function saveGistConfig(){ toast('ใช้ Firebase แล้ว ไม่ต้องตั้งค่า Gist'); }
 async function testSync(){
   toast('🔄 กำลังทดสอบ...');
-  const ok=await cloudSave(STATE);
-  if(ok)toast('✅ Cloud Sync ทำงานได้ปกติ!');
-  else toast('❌ ไม่สามารถเชื่อมต่อได้ ตรวจสอบ Gist ID และ Token',true);
+  const ok = await cloudSave(STATE);
+  if(ok) toast('✅ Firebase Sync ทำงานได้ปกติ!');
+  else toast('❌ ไม่สามารถเชื่อมต่อได้', true);
 }
-
-function loadGistConfig(){
-  try{
-    const saved=localStorage.getItem('tplan_gist');
-    if(saved){
-      const c=JSON.parse(saved);
-      GIST_CONFIG.gistId=c.gistId;
-      GIST_CONFIG.token=c.token;
-      syncEnabled=GIST_CONFIG.gistId!=='YOUR_GIST_ID';
-      // These elements may not exist yet if called before DOM ready
-      const gistEl=document.getElementById('cfg-gist-id');
-      const tokenEl=document.getElementById('cfg-token');
-      if(gistEl)gistEl.value=c.gistId;
-      if(tokenEl)tokenEl.value=c.token;
-      // Also fill quick-setup fields
-      const qg=document.getElementById('qs-gist-id');
-      const qt=document.getElementById('qs-token');
-      if(qg)qg.value=c.gistId;
-      if(qt)qt.value=c.token;
-    }
-  }catch(e){}
-}
-
-// ==================== QUICK SETUP HELPERS ====================
-function toggleGistSetup(){
-  const el=document.getElementById('gist-quick-setup');
-  el.style.display=el.style.display==='none'?'block':'none';
-}
-function quickSaveGist(){
-  const gistId=document.getElementById('qs-gist-id').value.trim();
-  const token=document.getElementById('qs-token').value.trim();
-  if(!gistId||!token){alert('กรุณาใส่ทั้ง Gist ID และ Token');return;}
-  GIST_CONFIG.gistId=gistId;
-  GIST_CONFIG.token=token;
-  syncEnabled=true;
-  try{localStorage.setItem('tplan_gist',JSON.stringify({gistId,token}));}catch(e){}
-  // Update cfg fields too
-  const gi=document.getElementById('cfg-gist-id'),tk=document.getElementById('cfg-token');
-  if(gi)gi.value=gistId;if(tk)tk.value=token;
-  document.getElementById('gist-quick-setup').style.display='none';
-  document.getElementById('login-nosync-status').style.display='none';
-  document.getElementById('login-sync-status').style.display='block';
-  alert('✅ บันทึกแล้ว! เข้าสู่ระบบได้เลย');
-}
+function loadGistConfig(){ /* ไม่ใช้แล้ว */ }
 function updateLoginSyncStatus(){
-  const ok=syncEnabled;
-  const s=document.getElementById('login-sync-status');
-  const ns=document.getElementById('login-nosync-status');
-  if(s&&ns){s.style.display=ok?'block':'none';ns.style.display=ok?'none':'block';}
+  const s = document.getElementById('login-sync-status');
+  const ns = document.getElementById('login-nosync-status');
+  // Firebase ไม่ต้องตั้งค่า — แสดง sync พร้อมเสมอ
+  if(s) s.style.display = 'block';
+  if(ns) ns.style.display = 'none';
 }
+function toggleGistSetup(){ /* ไม่ใช้แล้ว */ }
+function quickSaveGist(){ /* ไม่ใช้แล้ว */ }
 
 // ==================== QR + SHARE ====================
 function initShareSection(){
@@ -2018,11 +1964,10 @@ function injectPWAManifest(){
 }
 
 // ==================== INIT ====================
-loadGistConfig(); // Load Gist config BEFORE showing login
 loadNotifData();
 rescheduleAll();
 updateNotifBadge();
-updateLoginSyncStatus();
+updateLoginSyncStatus(); // Firebase พร้อมเสมอ ไม่ต้องตั้งค่า
 injectPWAManifest();
 
 // Check session
