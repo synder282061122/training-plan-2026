@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1e33">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Training Plan 2026 · Suan Son Loi</title>
+<link rel="manifest" id="pwa-manifest">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<style>
+/* ==================== TOKENS ==================== */
+:root{
+  --navy:#0f1e33; --navy2:#1a3150; --navy3:#243c5a;
+  --blue:#2563eb; --blue-l:#3b82f6; --sky:#dbeafe;
+  --red:#dc2626; --red-bg:#fef2f2; --red-light:#fecaca;
+  --orange:#ea580c; --orange-bg:#fff7ed;
+  --green:#16a34a; --green-bg:#f0fdf4;
+  --teal:#0891b2; --teal-bg:#ecfeff;
+  --gold:#b45309; --gold-bg:#fffbeb;
+  --train:#7c3aed; --train-bg:#f5f3ff; --train-light:#ede9fe;
+  --sat-bg:#f8fafc; --sun-bg:#fff5f5;
+  --border:#e2e8f0; --border2:#f1f5f9;
+  --text:#0f172a; --text2:#475569; --text3:#94a3b8;
+  --surf:#ffffff; --surf2:#f8fafc; --surf3:#f1f5f9;
+  --r:14px; --r-sm:8px;
+  --sh:0 1px 8px rgba(15,30,51,0.08),0 4px 24px rgba(15,30,51,0.06);
+  --sh-lg:0 8px 40px rgba(15,30,51,0.16);
+  --sidebar-w:260px;
+  --header-h:60px;
+  --tab-h:64px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{height:100%;}
+body{
+  font-family:'Noto Sans Thai','Inter',sans-serif;
+  background:var(--surf2);
+  color:var(--text);
+  height:100%;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+
+/* ==================== LAYOUT ==================== */
+#root{display:flex;height:100vh;height:100dvh;overflow:hidden;}
+
+/* --- SIDEBAR (desktop) --- */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--navy);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  transition:width 0.3s;
+}
+.sidebar-logo{
+  padding:20px 18px 16px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.logo-icon{
+  width:40px;height:40px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--blue),var(--train));
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+}
+.logo-text{color:#fff;}
+.logo-title{font-weight:800;font-size:0.95rem;line-height:1.1;}
+.logo-sub{font-size:0.68rem;color:rgba(255,255,255,0.5);margin-top:1px;}
+
+.sidebar-nav{flex:1;padding:10px 10px;overflow-y:auto;}
+.sidebar-nav::-webkit-scrollbar{display:none;}
+.nav-label{
+  font-size:0.6rem;font-weight:700;color:rgba(255,255,255,0.35);
+  text-transform:uppercase;letter-spacing:1px;
+  padding:12px 10px 4px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:10px;cursor:pointer;
+  color:rgba(255,255,255,0.65);font-size:0.84rem;font-weight:500;
+  transition:all 0.15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;
+}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9);}
+.nav-item.active{background:rgba(37,99,235,0.35);color:#fff;font-weight:600;}
+.nav-item.active .nav-icon{opacity:1;}
+.nav-icon{font-size:1rem;flex-shrink:0;opacity:0.7;transition:opacity 0.15s;}
+.nav-item.active .nav-icon{opacity:1;}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  border-radius:10px;padding:1px 6px;font-size:0.62rem;font-weight:700;
+}
+
+.sidebar-bottom{
+  padding:12px 10px;border-top:1px solid rgba(255,255,255,0.08);
+  display:flex;flex-direction:column;gap:4px;
+}
+
+/* Legend in sidebar */
+.sidebar-legend{padding:10px 10px 4px;}
+.leg-label{font-size:0.6rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.leg-row{display:flex;align-items:center;gap:7px;padding:3px 0;cursor:default;}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.leg-text{font-size:0.72rem;color:rgba(255,255,255,0.6);}
+
+/* --- MAIN AREA --- */
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+
+/* Desktop header */
+.desktop-header{
+  height:var(--header-h);flex-shrink:0;
+  background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:12px;
+}
+.dh-title{font-weight:700;font-size:1.05rem;color:var(--navy);flex:1;}
+.dh-subtitle{font-size:0.75rem;color:var(--text3);font-weight:400;margin-top:1px;}
+.dh-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);
+  background:#fff;color:var(--text2);font-size:0.78rem;font-weight:600;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;
+  font-family:'Noto Sans Thai','Inter',sans-serif;
+}
+.dh-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--sky);}
+.dh-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+.dh-btn.primary:hover{background:#1d4ed8;border-color:#1d4ed8;}
+.notif-badge-wrap{position:relative;}
+.hdr-notif-badge{
+  position:absolute;top:-4px;right:-4px;
+  background:var(--red);color:#fff;border-radius:50%;
+  width:16px;height:16px;font-size:0.55rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #fff;
+}
+
+/* Scroll area */
+.content-scroll{flex:1;overflow-y:auto;overflow-x:hidden;}
+.content-scroll::-webkit-scrollbar{width:6px;}
+.content-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* ==================== VIEWS ==================== */
+.view{display:none;}
+.view.active{display:block;}
+
+/* ==================== HOME VIEW ==================== */
+.home-grid{
+  display:grid;
+  grid-template-columns:1fr 340px;
+  gap:20px;padding:20px 24px;
+  align-items:start;
+}
+.hero-card{
+  background:linear-gradient(135deg,var(--navy) 0%,#1e3a5f 60%,#1a2f4a 100%);
+  border-radius:var(--r);padding:24px 28px;color:#fff;
+  position:relative;overflow:hidden;
+  grid-column:1 / -1;
+}
+.hero-card::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(96,165,250,0.1);}
+.hero-card::after{content:'';position:absolute;bottom:-40px;left:40px;width:120px;height:120px;border-radius:50%;background:rgba(124,58,237,0.1);}
+.hero-inner{display:flex;align-items:center;gap:32px;position:relative;z-index:1;flex-wrap:wrap;}
+.hero-date-block{}
+.hero-day-label{font-size:0.78rem;color:#93c5fd;font-weight:600;margin-bottom:4px;}
+.hero-big{font-size:3rem;font-weight:800;line-height:1;color:#fff;}
+.hero-month{font-size:1rem;color:#bfdbfe;font-weight:500;margin-top:2px;}
+.hero-events{flex:1;display:flex;flex-direction:column;gap:6px;min-width:200px;}
+.hero-ev{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.1);border-radius:8px;
+  padding:7px 12px;font-size:0.82rem;
+}
+.hero-stats{display:flex;gap:12px;flex-wrap:wrap;}
+.stat-pill{
+  background:rgba(255,255,255,0.12);border-radius:8px;
+  padding:8px 16px;text-align:center;
+}
+.stat-num{font-size:1.3rem;font-weight:800;color:#fff;line-height:1;}
+.stat-lbl{font-size:0.62rem;color:rgba(255,255,255,0.6);font-weight:500;margin-top:2px;}
+
+.home-left{display:flex;flex-direction:column;gap:16px;}
+.home-right{display:flex;flex-direction:column;gap:16px;}
+
+.section-card{background:#fff;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);overflow:hidden;}
+.sc-header{
+  padding:14px 18px 12px;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sc-title{font-size:0.82rem;font-weight:700;color:var(--navy);}
+.sc-btn{
+  background:var(--surf2);border:1px solid var(--border);border-radius:6px;
+  padding:3px 10px;font-size:0.68rem;font-weight:700;color:var(--blue);cursor:pointer;
+  font-family:'Noto Sans Thai','Inter',sans-serif;
+}
+.sc-body{padding:12px 18px 14px;}
+
+/* Upcoming list in home */
+.upcoming-list{display:flex;flex-direction:column;gap:7px;}
+.uc-item{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:9px 12px;border-radius:8px;border:1px solid var(--border2);
+  background:var(--surf2);cursor:pointer;transition:border-color 0.15s;
+}
+.uc-item:hover{border-color:var(--blue);}
+.uc-date-block{flex-shrink:0;width:36px;text-align:center;background:#fff;border-radius:6px;padding:4px 2px;border:1px solid var(--border);}
+.uc-day-num{font-size:1rem;font-weight:800;color:var(--navy);line-height:1;}
+.uc-mon-lbl{font-size:0.55rem;font-weight:700;color:var(--text3);margin-top:1px;}
+.uc-info{flex:1;min-width:0;}
+.uc-badge{display:inline-block;font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:10px;margin-bottom:3px;}
+.uc-name{font-size:0.8rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.uc-when{font-size:0.65rem;color:var(--text3);}
+.uc-today-label{color:var(--red)!important;font-weight:700;}
+.uc-tmr-label{color:var(--orange)!important;font-weight:700;}
+
+/* mini upcoming for sidebar */
+.mini-upcoming{display:flex;flex-direction:column;gap:4px;}
+.mini-uc{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:8px;
+  background:rgba(255,255,255,0.05);cursor:pointer;
+  transition:background 0.12s;
+}
+.mini-uc:hover{background:rgba(255,255,255,0.1);}
+.mini-uc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.mini-uc-info{flex:1;min-width:0;}
+.mini-uc-text{font-size:0.72rem;color:rgba(255,255,255,0.8);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mini-uc-date{font-size:0.62rem;color:rgba(255,255,255,0.4);}
+
+/* ==================== CALENDAR VIEW ==================== */
+.cal-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;padding:20px 24px;align-items:start;}
+.cal-main{}
+.cal-side{}
+
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.mnav-btn{
+  width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);
+  background:#fff;color:var(--navy);font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.mnav-btn:hover{border-color:var(--blue);color:var(--blue);}
+.mnav-title{text-align:center;}
+.mnav-en{font-size:1.15rem;font-weight:700;color:var(--navy);}
+.mnav-th{font-size:0.72rem;color:var(--text3);}
+
+.cal-card{background:#fff;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);overflow:hidden;}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);background:var(--navy);}
+.cal-wd{text-align:center;padding:9px 4px;font-size:0.68rem;font-weight:700;color:rgba(255,255,255,0.7);}
+.cal-wd:first-child{color:#fca5a5;}
+.cal-wd:last-child{color:#93c5fd;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+.cal-cell{
+  min-height:130px;border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);
+  padding:7px 6px;cursor:pointer;transition:background 0.12s;position:relative;
+  overflow:hidden;
+}
+.cal-cell:hover{background:var(--surf2);}
+.cal-cell.pre{background:var(--surf3);cursor:default;}
+.cal-cell.pre:hover{background:var(--surf3);}
+.cal-cell.s-sun{background:var(--sun-bg);}
+.cal-cell.s-sat{background:var(--sat-bg);}
+.cal-cell.s-hol{background:var(--red-bg);}
+.cal-cell.s-market{background:var(--orange-bg);}
+.cal-cell.s-nobin{background:var(--green-bg);}
+.cal-cell.s-clean{background:var(--teal-bg);}
+.cal-cell.s-act{background:var(--gold-bg);}
+.cal-cell.s-train{background:var(--train-bg);}
+.cal-cell.s-other{background:#f8fafc;}
+.cal-cell.today-cell{box-shadow:inset 0 0 0 2px var(--blue);}
+.cal-num{
+  font-size:0.82rem;font-weight:700;color:var(--text);display:block;
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;margin-bottom:2px;
+}
+.cal-cell.today-cell .cal-num{background:var(--blue);color:#fff;}
+.cal-cell.s-hol .cal-num{color:var(--red);}
+.cal-cell.s-market .cal-num{color:var(--orange);}
+.cal-cell.s-nobin .cal-num{color:var(--green);}
+.cal-cell.s-clean .cal-num{color:var(--teal);}
+.cal-cell.s-act .cal-num{color:var(--gold);}
+.cal-cell.s-train .cal-num{color:var(--train);}
+.cal-cell.s-other .cal-num{color:#475569;}
+.cal-ev-pill{
+  font-size:0.62rem;font-weight:600;padding:2px 5px;border-radius:4px;
+  display:block;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:100%;line-height:1.35;
+}
+
+/* Cal side panel */
+.cal-day-detail{
+  background:#fff;border-radius:var(--r);border:1px solid var(--border);
+  box-shadow:var(--sh);padding:16px;
+}
+.cdd-title{font-size:0.9rem;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.cdd-sub{font-size:0.72rem;color:var(--text3);margin-bottom:14px;}
+.cdd-empty{font-size:0.78rem;color:var(--text3);padding:12px 0;text-align:center;}
+.cdd-ev{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surf2);border-radius:7px;padding:7px 10px;
+  margin-bottom:5px;border:1px solid var(--border2);
+}
+.cdd-badge{font-size:0.6rem;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0;}
+.cdd-name{flex:1;font-size:0.78rem;color:var(--text);}
+.cdd-del{background:none;border:none;color:var(--red);cursor:pointer;opacity:0.5;font-size:0.85rem;padding:2px 4px;}
+.cdd-del:hover{opacity:1;}
+
+.add-ev-box{
+  background:var(--surf2);border-radius:9px;padding:12px;
+  margin-top:12px;border:1px solid var(--border);
+}
+.add-ev-title{font-size:0.68rem;font-weight:700;color:var(--text2);margin-bottom:8px;}
+.type-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;}
+.tc{
+  padding:4px 9px;border-radius:20px;font-size:0.65rem;font-weight:700;
+  cursor:pointer;border:1.5px solid transparent;transition:all 0.12s;
+}
+.tc.sel{filter:brightness(0.85);border-color:currentColor;}
+.tc-hol{background:var(--red-bg);color:var(--red);}
+.tc-mkt{background:var(--orange-bg);color:var(--orange);}
+.tc-nb{background:var(--green-bg);color:var(--green);}
+.tc-cl{background:var(--teal-bg);color:var(--teal);}
+.tc-tr{background:var(--train-light);color:var(--train);}
+.tc-act{background:var(--gold-bg);color:var(--gold);}
+.tc-other{background:#f1f5f9;color:#475569;}
+
+.add-row{display:flex;gap:6px;}
+.add-input{
+  flex:1;border:1.5px solid var(--border);border-radius:7px;
+  padding:8px 10px;font-size:0.8rem;outline:none;
+  font-family:'Noto Sans Thai','Inter',sans-serif;background:#fff;
+  transition:border-color 0.15s;
+}
+.add-input:focus{border-color:var(--blue);}
+.add-btn{
+  background:var(--blue);color:#fff;border:none;border-radius:7px;
+  padding:8px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;
+  white-space:nowrap;transition:background 0.15s;
+  font-family:'Noto Sans Thai','Inter',sans-serif;
+}
+.add-btn:hover{background:#1d4ed8;}
+.note-box{
+  width:100%;border:1.5px solid var(--border);border-radius:7px;
+  padding:8px 10px;font-size:0.8rem;resize:none;min-height:60px;
+  outline:none;font-family:'Noto Sans Thai','Inter',sans-serif;
+  margin-top:8px;transition:border-color 0.15s;background:#fff;
+}
+.note-box:focus{border-color:var(--blue);}
+.save-day-btn{
+  width:100%;margin-top:10px;padding:9px;border:none;border-radius:8px;
+  background:var(--blue);color:#fff;font-size:0.82rem;font-weight:700;
+  cursor:pointer;transition:background 0.15s;
+  font-family:'Noto Sans Thai','Inter',sans-serif;
+}
+.save-day-btn:hover{background:#1d4ed8;}
+
+/* Training summary side */
+.training-summary-card{
+  background:#fff;border-radius:var(--r);border:1px solid var(--border);
+  box-shadow:var(--sh);margin-top:14px;overflow:hidden;
+}
+.tsc-hdr{
+  padding:12px 16px;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.tsc-title{font-size:0.8rem;font-weight:700;color:var(--navy);}
+.tsc-edit{
+  background:var(--train-light);color:var(--train);border:none;
+  border-radius:6px;padding:3px 9px;font-size:0.68rem;font-weight:700;cursor:pointer;
+}
+.tsc-body{padding:10px 16px 12px;display:flex;flex-direction:column;gap:4px;}
+.tsc-item{
+  display:flex;gap:8px;font-size:0.76rem;color:var(--text);
+  padding:4px 6px;background:var(--surf2);border-radius:6px;
+}
+.tsc-num{font-weight:700;color:var(--blue);flex-shrink:0;font-size:0.68rem;min-width:16px;}
+
+/* ==================== ANNUAL VIEW ==================== */
+.annual-grid-layout{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;padding:20px 24px;
+}
+.amc{background:#fff;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);overflow:hidden;}
+.amc-hdr{background:var(--navy);padding:10px 14px;display:flex;align-items:center;gap:8px;}
+.amc-abbr{font-size:0.95rem;font-weight:800;color:#fff;min-width:34px;}
+.amc-name{font-size:0.72rem;color:rgba(255,255,255,0.6);flex:1;}
+.amc-edit{
+  background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.8);
+  border:none;border-radius:5px;padding:2px 8px;
+  font-size:0.62rem;font-weight:700;cursor:pointer;
+}
+.amc-wd-row{display:grid;grid-template-columns:repeat(7,1fr);background:#f8fafc;border-bottom:1px solid var(--border2);}
+.amc-wd{text-align:center;font-size:0.55rem;color:var(--text3);font-weight:700;padding:4px 0;}
+.amc-wd:first-child{color:var(--red);}
+.amc-wd:last-child{color:var(--teal);}
+.amc-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:6px;}
+.amc-cell{
+  aspect-ratio:1;border-radius:4px;font-size:0.62rem;font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);transition:all 0.1s;
+}
+.amc-cell:hover{filter:brightness(0.9);}
+.amc-cell.pre{color:var(--text3);cursor:default;}
+.amc-cell.pre:hover{filter:none;}
+.amc-cell.s-sun{color:var(--red);background:var(--sun-bg);border-radius:4px;}
+.amc-cell.s-sat{background:var(--sat-bg);}
+.amc-cell.s-hol{background:var(--red-bg);color:var(--red);}
+.amc-cell.s-market{background:var(--orange-bg);color:var(--orange);}
+.amc-cell.s-nobin{background:var(--green-bg);color:var(--green);}
+.amc-cell.s-clean{background:var(--teal-bg);color:var(--teal);}
+.amc-cell.s-act{background:var(--gold-bg);color:var(--gold);}
+.amc-cell.s-train{background:var(--train-bg);color:var(--train);}
+.amc-cell.s-other{background:#f8fafc;color:#475569;}
+.amc-cell.today-cell{background:var(--blue)!important;color:#fff!important;border-radius:50%;}
+.amc-evs{padding:6px 12px 10px;display:flex;flex-direction:column;gap:2px;}
+.amc-ev-pill{
+  font-size:0.6rem;padding:2px 6px;border-radius:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  display:block;margin:1px 0;
+}
+
+/* ==================== SETTINGS VIEW ==================== */
+.settings-layout{max-width:720px;margin:0 auto;padding:20px 24px;}
+.settings-section{margin-bottom:22px;}
+.settings-section-title{font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;padding:0 2px;margin-bottom:8px;}
+.settings-row{
+  background:#fff;border:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;padding:13px 16px;
+  cursor:pointer;transition:background 0.12s;margin-bottom:1px;
+  font-family:'Noto Sans Thai','Inter',sans-serif;width:100%;text-align:left;
+}
+.settings-row:first-of-type{border-radius:var(--r) var(--r) 0 0;}
+.settings-row:last-of-type{border-radius:0 0 var(--r) var(--r);margin-bottom:0;}
+.settings-row:only-of-type{border-radius:var(--r);}
+.settings-row:hover{background:var(--surf2);}
+.sr-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.sr-label{flex:1;font-size:0.85rem;font-weight:600;color:var(--text);}
+.sr-sub{font-size:0.68rem;color:var(--text3);}
+.sr-arr{color:var(--text3);font-size:0.8rem;}
+
+.legend-grid-box{
+  background:#fff;border:1px solid var(--border);border-radius:var(--r);
+  padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+}
+.lgb-item{display:flex;align-items:center;gap:8px;font-size:0.78rem;color:var(--text);}
+.lgb-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+
+/* ==================== MODALS / PANELS ==================== */
+/* Training edit modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(10,20,40,0.5);z-index:800;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{
+  background:#fff;border-radius:var(--r);width:500px;max-width:95vw;
+  max-height:85vh;overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:var(--sh-lg);
+  transform:translateY(16px);transition:transform 0.2s;
+}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-hdr{
+  background:var(--navy);color:#fff;padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.modal-hdr h2{font-size:0.95rem;font-weight:700;}
+.modal-close{background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;}
+.modal-close:hover{opacity:1;}
+.modal-body{flex:1;overflow-y:auto;padding:18px 20px;}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;}
+.btn-cancel{padding:8px 18px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text2);font-size:0.82rem;font-weight:600;cursor:pointer;font-family:'Noto Sans Thai','Inter',sans-serif;}
+.btn-save{padding:8px 18px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:'Noto Sans Thai','Inter',sans-serif;}
+
+.tr-item{display:flex;gap:8px;align-items:center;background:var(--surf2);border-radius:7px;padding:7px 10px;margin-bottom:5px;border:1px solid var(--border2);}
+.tr-num{font-weight:700;color:var(--blue);font-size:0.7rem;flex-shrink:0;min-width:18px;}
+.tr-text{flex:1;font-size:0.8rem;color:var(--text);}
+.tr-del{background:none;border:none;color:var(--red);cursor:pointer;opacity:0.5;font-size:0.9rem;}
+.tr-del:hover{opacity:1;}
+
+/* Notification side panel */
+.notif-overlay{
+  position:fixed;inset:0;background:rgba(10,20,40,0.4);z-index:900;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+}
+.notif-overlay.open{opacity:1;pointer-events:all;}
+.notif-panel{
+  position:absolute;right:0;top:0;bottom:0;width:min(380px,96vw);
+  background:#fff;display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:-4px 0 30px rgba(15,30,51,0.15);
+  transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);
+}
+.notif-overlay.open .notif-panel{transform:translateX(0);}
+.np-hdr{background:var(--navy);color:#fff;padding:16px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.np-hdr h2{font-size:0.9rem;font-weight:700;flex:1;}
+.np-close{background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;opacity:0.7;}
+.np-close:hover{opacity:1;}
+.np-body{flex:1;overflow-y:auto;padding:14px;}
+.np-body::-webkit-scrollbar{display:none;}
+.np-section{margin-bottom:18px;}
+.np-section h3{font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px;}
+
+.perm-box{background:var(--sky);border:1px solid #bfdbfe;border-radius:10px;padding:14px;text-align:center;}
+.perm-status{display:inline-block;padding:3px 12px;border-radius:20px;font-size:0.72rem;font-weight:700;margin-bottom:6px;}
+.ps-ok{background:#dcfce7;color:var(--green);}
+.ps-no{background:var(--red-bg);color:var(--red);}
+.ps-wait{background:var(--gold-bg);color:var(--gold);}
+.perm-desc{font-size:0.75rem;color:var(--text2);margin-bottom:10px;line-height:1.45;}
+.perm-btn{width:100%;padding:9px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-size:0.8rem;font-weight:700;cursor:pointer;margin-bottom:6px;font-family:'Noto Sans Thai','Inter',sans-serif;}
+.test-btn{width:100%;padding:7px;border:none;border-radius:8px;background:var(--navy2);color:#fff;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Noto Sans Thai','Inter',sans-serif;}
+
+.ntgl-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border2);}
+.ntgl-row:last-child{border-bottom:none;}
+.ntgl-lbl{font-size:0.8rem;font-weight:600;color:var(--text);}
+.ntgl-lbl small{display:block;font-size:0.65rem;color:var(--text3);font-weight:400;margin-top:1px;}
+.switch{position:relative;display:inline-block;width:42px;height:23px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;inset:0;background:#cbd5e1;transition:0.25s;border-radius:23px;}
+.slider:before{position:absolute;content:'';height:17px;width:17px;left:3px;bottom:3px;background:#fff;transition:0.25s;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.2);}
+input:checked+.slider{background:var(--blue);}
+input:checked+.slider:before{transform:translateX(19px);}
+
+.np-select{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:0.82rem;outline:none;margin-top:4px;background:#fff;color:var(--text);font-family:'Noto Sans Thai','Inter',sans-serif;}
+
+.nc{display:flex;gap:8px;align-items:flex-start;background:var(--surf2);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;margin-bottom:5px;}
+.nc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.nc-info{flex:1;min-width:0;}
+.nc-date{font-size:0.62rem;font-weight:700;color:var(--text3);}
+.nc-text{font-size:0.76rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nc-when{font-size:0.62rem;color:var(--blue);margin-top:1px;}
+.nc-btn{border:1.5px solid var(--border);border-radius:5px;padding:2px 7px;font-size:0.62rem;font-weight:700;cursor:pointer;background:#fff;color:var(--blue);flex-shrink:0;white-space:nowrap;font-family:'Noto Sans Thai','Inter',sans-serif;}
+.nc-btn.active{background:var(--sky);border-color:var(--blue);}
+.nc-btn.cancel{color:var(--red);border-color:var(--red);}
+.np-empty{text-align:center;color:var(--text3);font-size:0.78rem;padding:14px;}
+
+/* Export dropdown */
+.export-dropdown{
+  position:absolute;top:calc(100% + 6px);right:0;
+  background:#fff;border-radius:var(--r-sm);min-width:240px;
+  box-shadow:var(--sh-lg);z-index:400;border:1px solid var(--border);
+  overflow:hidden;display:none;
+}
+.export-dropdown.open{display:block;}
+.ed-section{padding:6px 14px 2px;font-size:0.62rem;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;}
+.ed-btn{
+  display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:10px 14px;
+  border:none;background:none;font-size:0.8rem;font-weight:500;color:var(--text);
+  cursor:pointer;transition:background 0.12s;font-family:'Noto Sans Thai','Inter',sans-serif;
+}
+.ed-btn:hover{background:var(--surf2);}
+.ed-divider{height:1px;background:var(--border2);margin:3px 0;}
+
+/* ==================== TOAST ==================== */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(6px);
+  background:var(--navy);color:#fff;padding:9px 20px;border-radius:20px;
+  font-size:0.8rem;font-weight:600;z-index:9999;opacity:0;transition:all 0.22s;
+  pointer-events:none;white-space:nowrap;box-shadow:var(--sh-lg);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.err{background:var(--red);}
+
+/* PDF Progress */
+.pdf-overlay{position:fixed;inset:0;background:rgba(10,20,40,0.82);z-index:9000;display:none;align-items:center;justify-content:center;}
+.pdf-overlay.show{display:flex;}
+.pdf-box{background:#fff;border-radius:var(--r);padding:28px 36px;text-align:center;min-width:260px;max-width:90vw;box-shadow:var(--sh-lg);}
+.pdf-box h3{font-size:0.95rem;font-weight:700;color:var(--navy);margin-bottom:10px;}
+.pdf-bar-wrap{background:var(--border);border-radius:8px;height:8px;overflow:hidden;margin:10px 0;}
+.pdf-bar{height:100%;background:var(--blue);border-radius:8px;transition:width 0.3s;width:0%;}
+.pdf-msg{font-size:0.75rem;color:var(--text2);}
+
+/* ==================== MOBILE OVERRIDES ==================== */
+@media(max-width:768px){
+  .sidebar{display:none;}
+  #root{flex-direction:column;}
+  .main-area{height:100%;}
+  .desktop-header{display:none;}
+
+  /* Mobile app shell */
+  #mobile-header{
+    display:flex;height:56px;flex-shrink:0;
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    align-items:center;padding:0 14px;gap:10px;
+    box-shadow:0 2px 12px rgba(0,0,0,0.3);
+  }
+  .mh-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--train));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+  .mh-title{flex:1;font-weight:700;font-size:0.9rem;color:#fff;}
+  .mh-title span{color:#60a5fa;font-size:0.65rem;display:block;font-weight:500;}
+  .mh-btn{width:36px;height:36px;border-radius:9px;border:none;background:rgba(255,255,255,0.12);color:#fff;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;}
+
+  .content-scroll{padding-bottom:var(--tab-h);}
+
+  /* Tab nav */
+  #tab-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;height:var(--tab-h);
+    background:#fff;border-top:1px solid var(--border);z-index:200;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .tab-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;border:none;background:none;cursor:pointer;color:var(--text3);
+    font-size:0.6rem;font-weight:600;font-family:'Noto Sans Thai','Inter',sans-serif;
+    padding:8px 4px 4px;
+  }
+  .tab-btn .ti{font-size:1.2rem;transition:transform 0.15s;}
+  .tab-btn.active{color:var(--blue);}
+  .tab-btn.active .ti{transform:scale(1.15);}
+
+  /* Layouts → single column on mobile */
+  .home-grid{grid-template-columns:1fr;padding:12px;}
+  .home-grid .hero-card{grid-column:1;}
+  .hero-inner{gap:16px;}
+  .hero-big{font-size:2.2rem;}
+  .hero-stats{display:none;}
+
+  .cal-layout{grid-template-columns:1fr;padding:12px;}
+  .cal-side{display:none;}
+  .cal-cell{min-height:60px;}
+
+  .annual-grid-layout{grid-template-columns:1fr;padding:12px;gap:10px;}
+
+  .settings-layout{padding:12px;}
+  .legend-grid-box{grid-template-columns:repeat(2,1fr);}
+
+  .cal-ev-pill{display:none;}
+  .cal-cell .ev-dots-mobile{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px;}
+
+  /* Home right sidebar hidden on mobile — show inline */
+  .home-right{display:none;}
+  .mobile-upcoming-section{display:block;}
+  .desktop-upcoming-section{display:none;}
+}
+
+@media(min-width:769px){
+  #mobile-header{display:none;}
+  #tab-nav{display:none;}
+  .mobile-upcoming-section{display:none;}
+  .desktop-upcoming-section{display:block;}
+}
+
+/* ev dots for mobile cal */
+.ev-dots-m{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px;}
+.ev-dot{width:5px;height:5px;border-radius:50%;}
+.dot-hol{background:var(--red);}
+.dot-market{background:var(--orange);}
+.dot-nobin{background:var(--green);}
+.dot-clean{background:var(--teal);}
+.dot-act{background:var(--gold);}
+.dot-train{background:var(--train);}
+.dot-other{background:#94a3b8;}
+
+/* Mobile day bottom sheet */
+.bs-overlay{position:fixed;inset:0;background:rgba(10,20,40,0.45);z-index:700;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.bs-overlay.open{opacity:1;pointer-events:all;}
+.bs{
+  position:absolute;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;
+  background:#fff;border-radius:20px 20px 0 0;
+  max-height:88vh;overflow:hidden;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.bs-overlay.open .bs{transform:translateY(0);}
+.bs-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:10px auto 0;}
+.bs-hdr{padding:12px 16px 10px;border-bottom:1px solid var(--border);}
+.bs-title{font-size:0.95rem;font-weight:700;color:var(--navy);}
+.bs-sub{font-size:0.7rem;color:var(--text3);}
+.bs-body{flex:1;overflow-y:auto;padding:14px 16px;}
+.bs-body::-webkit-scrollbar{display:none;}
+.bs-foot{padding:10px 16px 12px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.bs-cancel{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:9px;background:#fff;color:var(--text2);font-size:0.82rem;font-weight:600;cursor:pointer;font-family:'Noto Sans Thai','Inter',sans-serif;}
+.bs-save{flex:2;padding:10px;border:none;border-radius:9px;background:var(--blue);color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:'Noto Sans Thai','Inter',sans-serif;}
+
+/* ==================== LOGIN SCREEN ==================== */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#0f1e33 0%,#1a3150 50%,#0f2744 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Sans Thai','Inter',sans-serif;
+}
+.login-card{
+  background:#fff;border-radius:20px;padding:36px 32px;
+  width:360px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  text-align:center;
+}
+.login-logo{
+  width:64px;height:64px;border-radius:18px;margin:0 auto 16px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  display:flex;align-items:center;justify-content:center;font-size:1.8rem;
+}
+.login-title{font-size:1.2rem;font-weight:800;color:#0f1e33;margin-bottom:4px;}
+.login-sub{font-size:0.78rem;color:#64748b;margin-bottom:28px;}
+.login-mode-tabs{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;
+}
+.login-tab{
+  padding:10px;border-radius:10px;border:2px solid #e2e8f0;
+  background:#f8fafc;cursor:pointer;transition:all 0.15s;
+  font-size:0.82rem;font-weight:600;color:#64748b;
+}
+.login-tab.active{border-color:#2563eb;background:#dbeafe;color:#1d4ed8;}
+.login-field{
+  width:100%;border:2px solid #e2e8f0;border-radius:10px;
+  padding:11px 14px;font-size:0.9rem;outline:none;margin-bottom:12px;
+  font-family:'Noto Sans Thai','Inter',sans-serif;transition:border-color 0.15s;
+  text-align:center;letter-spacing:3px;
+}
+.login-field:focus{border-color:#2563eb;}
+.login-btn{
+  width:100%;padding:13px;border:none;border-radius:10px;
+  background:#2563eb;color:#fff;font-size:0.95rem;font-weight:700;
+  cursor:pointer;transition:background 0.15s;margin-top:4px;
+  font-family:'Noto Sans Thai','Inter',sans-serif;
+}
+.login-btn:hover{background:#1d4ed8;}
+.login-btn.staff-btn{background:#16a34a;}
+.login-btn.staff-btn:hover{background:#15803d;}
+.login-error{color:#dc2626;font-size:0.78rem;margin-top:8px;min-height:20px;}
+.admin-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:#fef3c7;color:#92400e;border:1px solid #fcd34d;
+  border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:700;
+  margin-left:8px;
+}
+.staff-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:#dcfce7;color:#166534;border:1px solid #86efac;
+  border-radius:20px;padding:2px 10px;font-size:0.7rem;font-weight:700;
+  margin-left:8px;
+}
+/* Cloud sync indicator */
+.sync-indicator{
+  display:flex;align-items:center;gap:6px;
+  font-size:0.7rem;font-weight:600;padding:4px 10px;border-radius:20px;
+  transition:all 0.3s;
+}
+.sync-ok{background:#dcfce7;color:#16a34a;}
+.sync-loading{background:#fef3c7;color:#b45309;}
+.sync-error{background:#fef2f2;color:#dc2626;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spin{display:inline-block;animation:spin 1s linear infinite;}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">📅</div>
+    <div class="login-title">Training Plan 2026</div>
+    <div class="login-sub">Suan Son Loi Resort · HR Department</div>
+    <div class="login-mode-tabs">
+      <div class="login-tab active" id="tab-admin" onclick="setLoginMode('admin')">🔐 Admin<br><small style="font-weight:400;font-size:0.7rem;">แก้ไขข้อมูล</small></div>
+      <div class="login-tab" id="tab-staff" onclick="setLoginMode('staff')">👀 Staff<br><small style="font-weight:400;font-size:0.7rem;">ดูข้อมูล</small></div>
+    </div>
+    <div id="admin-pass-section">
+      <input class="login-field" type="password" id="admin-password" placeholder="รหัสผ่าน Admin" maxlength="20" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">🔐 เข้าสู่ระบบ Admin</button>
+    <div class="login-error" id="login-error"></div>
+    <!-- Cloud status on login -->
+    <div id="login-sync-status" style="margin-top:14px;padding:10px 12px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0;font-size:0.72rem;color:#166534;line-height:1.6;">
+      ☁️ <strong>Firebase Cloud Sync พร้อมใช้งาน</strong><br>
+      <span style="color:#15803d;">เปิดลิงก์เดียวกันทุกเครื่อง — ข้อมูลอัปเดตอัตโนมัติ ไม่ต้องตั้งค่าเพิ่ม</span>
+    </div>
+    <div id="login-nosync-status" style="display:none;"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;font-size:0.68rem;color:#94a3b8;">
+      v3.0 · Firebase Realtime Sync · Suan Son Loi Resort
+    </div>
+  </div>
+</div>
+
+<div id="root" style="display:none">
+  <!-- ===== SIDEBAR (desktop) ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📅</div>
+      <div class="logo-text">
+        <div class="logo-title">Training Plan</div>
+        <div class="logo-sub">2026 · Suan Son Loi Resort</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-label">เมนูหลัก</div>
+      <button class="nav-item active" id="sb-home" onclick="switchView('home')"><span class="nav-icon">🏠</span>หน้าหลัก</button>
+      <button class="nav-item" id="sb-cal" onclick="switchView('cal')"><span class="nav-icon">📅</span>ปฏิทินรายเดือน</button>
+      <button class="nav-item" id="sb-annual" onclick="switchView('annual')"><span class="nav-icon">📆</span>ภาพรวมรายปี</button>
+      <button class="nav-item" id="sb-settings" onclick="switchView('settings')"><span class="nav-icon">⚙️</span>ตั้งค่า & เพิ่มเติม</button>
+
+      <div class="nav-label" style="margin-top:8px;">กิจกรรมใกล้มาถึง</div>
+      <div id="sidebar-upcoming" class="mini-upcoming"></div>
+
+      <div class="nav-label" style="margin-top:8px;">สัญลักษณ์</div>
+      <div style="padding:0 4px 8px;">
+        <div class="leg-row"><div class="leg-dot" style="background:var(--red)"></div><span class="leg-text">🏖 Holiday</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--orange)"></div><span class="leg-text">🏪 Suan Son Loi</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--green)"></div><span class="leg-text">🚯 NO Bin Day</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--teal)"></div><span class="leg-text">🧹 Cleaning Day</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--train)"></div><span class="leg-text">🎓 Training</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--gold)"></div><span class="leg-text">📌 Activity</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:#94a3b8"></div><span class="leg-text">📎 Other</span></div>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="nav-item admin-only" onclick="saveData()"><span class="nav-icon">💾</span>บันทึกข้อมูล</button>
+      <button class="nav-item" onclick="openExportMenu(event)"><span class="nav-icon">📤</span>Export</button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN AREA ===== -->
+  <div class="main-area">
+    <!-- Mobile Header -->
+    <div id="mobile-header">
+      <div class="mh-logo">📅</div>
+      <div class="mh-title">Training Plan <span>2026 · Suan Son Loi</span></div>
+      <button class="mh-btn" onclick="openExportMenu(event)">📤</button>
+      <button class="mh-btn notif-badge-wrap" id="btn-notif-m" onclick="openNotifPanel()">🔔<span class="hdr-notif-badge" id="badge-m" style="display:none"></span></button>
+    </div>
+
+    <!-- Desktop Header -->
+    <div class="desktop-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;"><div class="dh-title" id="dh-title">หน้าหลัก</div><span id="role-badge-desk"></span><span class="sync-indicator sync-ok" id="sync-badge-desk" style="display:none">✅ Synced</span></div>
+        <div class="dh-subtitle" id="dh-sub">Training Year Plan 2026 · Suan Son Loi Resort</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;position:relative;">
+        <button class="dh-btn admin-only" onclick="saveData()">💾 บันทึก</button>
+        <div style="position:relative;">
+          <button class="dh-btn" onclick="openExportMenu(event)">📤 Export ▾</button>
+          <div class="export-dropdown" id="export-menu">
+            <div class="ed-section">📊 Excel</div>
+            <button class="ed-btn" onclick="exportExcelAnnual();closeExportMenu()">📊 Excel รายปี (1 Sheet)</button>
+            <button class="ed-btn" onclick="exportExcelMonthly();closeExportMenu()">📋 Excel 12 Sheets</button>
+            <button class="ed-btn" onclick="exportExcelCombined();closeExportMenu()">📦 Excel Combined</button>
+            <div class="ed-divider"></div>
+            <div class="ed-section">📄 PDF</div>
+            <button class="ed-btn" onclick="exportPDFMonthly();closeExportMenu()">📄 PDF เดือนนี้</button>
+            <button class="ed-btn" onclick="exportPDFAllMonths();closeExportMenu()">📚 PDF ทุกเดือน</button>
+            <div class="ed-divider"></div>
+            <button class="ed-btn" onclick="exportJSON();closeExportMenu()">🗂 JSON Backup</button>
+          </div>
+        </div>
+        <div class="notif-badge-wrap">
+          <button class="dh-btn" id="btn-notif-d" onclick="openNotifPanel()">🔔 แจ้งเตือน</button>
+          <span class="hdr-notif-badge" id="badge-d" style="display:none"></span>
+        </div>
+        <button class="dh-btn" onclick="document.getElementById('import-file').click()">📥 Import</button>
+        <button class="dh-btn" onclick="confirmReset()" style="color:var(--red);" id="btn-reset">🔄 Reset</button>
+        <button class="dh-btn" onclick="doLogout()" style="color:var(--text2);">🚪 ออกจากระบบ</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-scroll" id="content-scroll">
+
+      <!-- HOME VIEW -->
+      <div class="view active" id="view-home">
+        <div class="home-grid">
+          <div class="hero-card" style="grid-column:1/-1">
+            <div class="hero-inner">
+              <div class="hero-date-block" id="hero-date-block"></div>
+              <div class="hero-events" id="hero-events"></div>
+              <div class="hero-stats" id="hero-stats"></div>
+            </div>
+          </div>
+          <!-- Left: upcoming -->
+          <div class="home-left">
+            <div class="section-card desktop-upcoming-section">
+              <div class="sc-header"><span class="sc-title">📅 กิจกรรมใกล้มาถึง 30 วัน</span><button class="sc-btn" onclick="switchView('cal')">ดูปฏิทิน →</button></div>
+              <div class="sc-body"><div class="upcoming-list" id="home-upcoming-list"></div></div>
+            </div>
+            <div class="mobile-upcoming-section">
+              <div class="section-card">
+                <div class="sc-header"><span class="sc-title">📅 กิจกรรมใกล้มาถึง</span></div>
+                <div class="sc-body"><div class="upcoming-list" id="home-upcoming-list-m"></div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Right: this month training -->
+          <div class="home-right">
+            <div class="section-card">
+              <div class="sc-header"><span class="sc-title">🎓 Training เดือนนี้</span><button class="sc-btn" id="home-tr-edit-btn">✏ แก้ไข</button></div>
+              <div class="sc-body" id="home-training-list"></div>
+            </div>
+            <div class="section-card">
+              <div class="sc-header"><span class="sc-title">📊 สถิติปี 2026</span></div>
+              <div class="sc-body" id="home-stats-box"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR VIEW -->
+      <div class="view" id="view-cal">
+        <div class="cal-layout">
+          <div class="cal-main">
+            <div class="month-nav">
+              <button class="mnav-btn" onclick="prevMonth()">‹</button>
+              <div class="mnav-title"><div class="mnav-en" id="mnav-en"></div><div class="mnav-th" id="mnav-th"></div></div>
+              <button class="mnav-btn" onclick="nextMonth()">›</button>
+            </div>
+            <div class="cal-card">
+              <div class="cal-weekdays">
+                <div class="cal-wd">อาทิตย์</div><div class="cal-wd">จันทร์</div><div class="cal-wd">อังคาร</div>
+                <div class="cal-wd">พุธ</div><div class="cal-wd">พฤหัสบดี</div><div class="cal-wd">ศุกร์</div><div class="cal-wd">เสาร์</div>
+              </div>
+              <div class="cal-grid" id="cal-grid"></div>
+            </div>
+          </div>
+          <div class="cal-side">
+            <div class="cal-day-detail" id="cal-day-detail">
+              <div class="cdd-title" id="cdd-title">เลือกวันในปฏิทิน</div>
+              <div class="cdd-sub" id="cdd-sub">คลิกที่วันเพื่อดู/แก้ไขกิจกรรม</div>
+              <div id="cdd-ev-list"></div>
+              <div class="add-ev-box" id="cdd-add-box" style="display:none">
+                <div class="add-ev-title">เพิ่มกิจกรรม</div>
+                <div class="type-chips" id="desktop-chips"></div>
+                <div class="add-row">
+                  <input class="add-input" id="d-ev-text" placeholder="ชื่อกิจกรรม..." onkeydown="if(event.key==='Enter')deskAddEvent()">
+                  <button class="add-btn" onclick="deskAddEvent()">+ เพิ่ม</button>
+                </div>
+                <textarea class="note-box" id="d-note" placeholder="Note / หมายเหตุ..."></textarea>
+                <button class="save-day-btn" onclick="deskSaveDay()">✓ บันทึก</button>
+              </div>
+            </div>
+            <div class="training-summary-card">
+              <div class="tsc-hdr">
+                <span class="tsc-title">📋 Training Summary</span>
+                <button class="tsc-edit" id="tsc-edit-btn" onclick="openTrainingModal()">✏ แก้ไข</button>
+              </div>
+              <div class="tsc-body" id="tsc-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANNUAL VIEW -->
+      <div class="view" id="view-annual">
+        <div class="annual-grid-layout" id="annual-grid"></div>
+      </div>
+
+      <!-- SETTINGS VIEW -->
+      <div class="view" id="view-settings">
+        <div class="settings-layout">
+          <div class="settings-section">
+            <div class="settings-section-title">ข้อมูลและไฟล์</div>
+            <button class="settings-row" onclick="saveData()"><div class="sr-icon" style="background:#dcfce7">💾</div><div><div class="sr-label">บันทึกข้อมูล</div><div class="sr-sub">Save to browser storage</div></div><span class="sr-arr">›</span></button>
+            <button class="settings-row" onclick="document.getElementById('import-file').click()"><div class="sr-icon" style="background:#dbeafe">📥</div><div><div class="sr-label">Import JSON</div><div class="sr-sub">กู้คืนข้อมูล</div></div><span class="sr-arr">›</span></button>
+            <button class="settings-row" onclick="exportJSON()"><div class="sr-icon" style="background:#fef3c7">🗂</div><div><div class="sr-label">Export JSON Backup</div><div class="sr-sub">สำรองข้อมูล</div></div><span class="sr-arr">›</span></button>
+            <button class="settings-row" onclick="confirmReset()" style="color:var(--red)"><div class="sr-icon" style="background:#fce4ec">🔄</div><div><div class="sr-label">Reset ข้อมูล</div><div class="sr-sub">กลับค่าเริ่มต้น</div></div><span class="sr-arr" style="color:var(--red)">›</span></button>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">📲 เปิดบนมือถือ / แชร์ลิงก์</div>
+            <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px;">
+              <p style="font-size:0.8rem;color:var(--text2);margin-bottom:12px;line-height:1.6;">สแกน QR Code ด้วยมือถือเพื่อเปิด App หรือคัดลอกลิงก์ส่งผ่าน LINE</p>
+              <div id="qr-container" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+              <div style="background:var(--surf2);border-radius:8px;padding:10px;margin-bottom:10px;word-break:break-all;font-size:0.72rem;color:var(--text2);font-family:monospace;" id="share-link-box">กำลังโหลด...</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button onclick="copyShareLink()" style="flex:1;padding:9px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;">📋 คัดลอกลิงก์</button>
+                <button onclick="shareViaOS()" style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;">🔗 แชร์</button>
+              </div>
+              <div style="margin-top:12px;padding:12px;background:#eff6ff;border-radius:8px;font-size:0.72rem;color:#1e3a8a;line-height:1.8;border:1px solid #bfdbfe;">
+                <strong>🌐 วิธีโฮสต์ฟรีให้เปิดลิงก์ได้ทุกที่:</strong><br>
+                1. ไปที่ <a href="https://app.netlify.com/drop" target="_blank" style="color:#2563eb;font-weight:700;">app.netlify.com/drop</a><br>
+                2. ลากไฟล์ <code style="background:#dbeafe;padding:1px 4px;border-radius:3px;">Training_Plan_2026_App.html</code> วางลงในหน้า<br>
+                3. ได้รับลิงก์ <code>https://xxx.netlify.app</code> ทันที<br>
+                4. แชร์ลิงก์หรือสแกน QR ให้ทีมงาน
+              </div>
+              <div style="margin-top:8px;padding:10px;background:#f0fdf4;border-radius:8px;font-size:0.72rem;color:#166534;line-height:1.7;border:1px solid #bbf7d0;">
+                <strong>📱 เพิ่มเป็นไอคอนบนมือถือ:</strong><br>
+                iPhone: Safari → Share → "Add to Home Screen"<br>
+                Android: Chrome → เมนู 3 จุด → "Add to Home screen"
+              </div>
+            </div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">แจ้งเตือน</div>
+            <button class="settings-row" onclick="openNotifPanel()"><div class="sr-icon" style="background:#ede9fe">🔔</div><div><div class="sr-label">ตั้งค่าการแจ้งเตือน</div><div class="sr-sub">Push Notification บนมือถือ</div></div><span class="sr-arr">›</span></button>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">สัญลักษณ์</div>
+            <div class="legend-grid-box">
+              <div class="lgb-item"><div class="lgb-dot" style="background:var(--red)"></div>🏖 Holiday</div>
+              <div class="lgb-item"><div class="lgb-dot" style="background:var(--orange)"></div>🏪 Suan Son Loi</div>
+              <div class="lgb-item"><div class="lgb-dot" style="background:var(--green)"></div>🚯 NO Bin Day</div>
+              <div class="lgb-item"><div class="lgb-dot" style="background:var(--teal)"></div>🧹 Cleaning Day</div>
+              <div class="lgb-item"><div class="lgb-dot" style="background:var(--train)"></div>🎓 Training</div>
+              <div class="lgb-item"><div class="lgb-dot" style="background:var(--gold)"></div>📌 Activity</div>
+              <div class="lgb-item"><div class="lgb-dot" style="background:#94a3b8"></div>📎 Other</div>
+            </div>
+          </div>
+          <div class="settings-section admin-only">
+            <div class="settings-section-title">☁️ Cloud Sync (Firebase)</div>
+            <div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <div style="width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>
+                <span style="font-size:0.82rem;font-weight:700;color:var(--green);">เชื่อมต่อ Firebase แล้ว</span>
+              </div>
+              <p style="font-size:0.78rem;color:var(--text2);margin-bottom:12px;line-height:1.6;">ข้อมูลซิงค์อัตโนมัติทุกครั้งที่กด <strong>บันทึก</strong> — ทุกอุปกรณ์จะอัปเดตทันที ไม่ต้องตั้งค่าเพิ่ม</p>
+              <button onclick="testSync()" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'Noto Sans Thai',sans-serif;">🔄 ทดสอบการเชื่อมต่อ</button>
+              <div style="margin-top:10px;padding:10px;background:var(--green-bg);border-radius:8px;font-size:0.7rem;color:#166534;line-height:1.7;">
+                <strong>✅ วิธีใช้:</strong><br>
+                Admin กด 💾 บันทึก → ข้อมูลขึ้น Firebase<br>
+                Staff เปิดลิงก์ → เห็นข้อมูลล่าสุดอัตโนมัติ<br>
+                ไม่ต้อง Import/Export ไม่ต้อง Token ใดๆ
+              </div>
+            </div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-section-title">เกี่ยวกับ</div>
+            <div class="legend-grid-box" style="grid-template-columns:1fr;font-size:0.8rem;color:var(--text2);line-height:1.7;">
+              Training Year Plan 2026<br>
+              <span style="color:var(--text3)">Suan Son Loi Resort · HR Department<br>เปิดใช้งานได้ทั้งบนคอมพิวเตอร์และมือถือ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-scroll -->
+  </div><!-- /main-area -->
+</div><!-- /root -->
+
+<!-- Mobile Tab Nav -->
+<div id="tab-nav">
+  <button class="tab-btn active" id="tab-home" onclick="switchView('home')"><span class="ti">🏠</span>หน้าหลัก</button>
+  <button class="tab-btn" id="tab-cal" onclick="switchView('cal')"><span class="ti">📅</span>ปฏิทิน</button>
+  <button class="tab-btn" id="tab-annual" onclick="switchView('annual')"><span class="ti">📆</span>รายปี</button>
+  <button class="tab-btn" id="tab-settings" onclick="switchView('settings')"><span class="ti">⚙️</span>ตั้งค่า</button>
+</div>
+
+<!-- Mobile Bottom Sheet (day edit) -->
+<div class="bs-overlay" id="bs-overlay" onclick="closeBsOut(event)">
+  <div class="bs" id="bs">
+    <div class="bs-handle"></div>
+    <div class="bs-hdr"><div class="bs-title" id="bs-title"></div><div class="bs-sub" id="bs-sub"></div></div>
+    <div class="bs-body">
+      <div style="font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;">กิจกรรม</div>
+      <div id="bs-ev-list"></div>
+      <div class="add-ev-box" style="margin-top:8px;background:var(--surf2);border-radius:9px;padding:10px 12px;border:1px solid var(--border);">
+        <div style="font-size:0.68rem;font-weight:700;color:var(--text2);margin-bottom:7px;">เพิ่มกิจกรรม</div>
+        <div class="type-chips" id="mobile-chips" style="margin-bottom:8px;"></div>
+        <div class="add-row">
+          <input class="add-input" id="m-ev-text" placeholder="ชื่อกิจกรรม..." onkeydown="if(event.key==='Enter')mobileAddEvent()">
+          <button class="add-btn" onclick="mobileAddEvent()">+ เพิ่ม</button>
+        </div>
+        <textarea class="note-box" id="m-note" placeholder="Note / หมายเหตุ..." style="margin-top:8px;"></textarea>
+      </div>
+    </div>
+    <div class="bs-foot">
+      <button class="bs-cancel" onclick="closeBS()">ยกเลิก</button>
+      <button class="bs-save" onclick="mobileSaveDay()">✓ บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Training Edit Modal -->
+<div class="modal-overlay" id="tr-modal-overlay" onclick="closeTrOut(event)">
+  <div class="modal">
+    <div class="modal-hdr"><h2 id="tr-modal-title">แก้ไข Training Summary</h2><button class="modal-close" onclick="closeTrainingModal()">✕</button></div>
+    <div class="modal-body">
+      <div id="tr-edit-list"></div>
+      <div class="add-ev-box" style="margin-top:10px;background:var(--surf2);border-radius:9px;padding:10px 12px;border:1px solid var(--border);">
+        <div style="font-size:0.68rem;font-weight:700;color:var(--text2);margin-bottom:7px;">เพิ่มรายการ Training</div>
+        <div class="add-row">
+          <input class="add-input" id="tr-new-text" placeholder="เพิ่มรายการ..." onkeydown="if(event.key==='Enter')trAddItem()">
+          <button class="add-btn" onclick="trAddItem()">+ เพิ่ม</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeTrainingModal()">ยกเลิก</button>
+      <button class="btn-save" onclick="trSave()">✓ บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Panel -->
+<div class="notif-overlay" id="notif-overlay" onclick="closeNotifOut(event)">
+  <div class="notif-panel">
+    <div class="np-hdr"><span>🔔</span><h2>ระบบแจ้งเตือน</h2><button class="np-close" onclick="closeNotifPanel()">✕</button></div>
+    <div class="np-body">
+      <div class="np-section">
+        <h3>การอนุญาต</h3>
+        <div class="perm-box">
+          <div id="perm-badge" class="perm-status ps-wait">⏳ ยังไม่ได้อนุญาต</div>
+          <p class="perm-desc" id="perm-desc">กด "อนุญาต" เพื่อรับการแจ้งเตือนกิจกรรมบนอุปกรณ์</p>
+          <button class="perm-btn" id="perm-btn" onclick="requestPermission()">🔔 อนุญาตการแจ้งเตือน</button>
+          <button class="test-btn" onclick="sendTestNotif()">🧪 ทดสอบการแจ้งเตือน</button>
+        </div>
+      </div>
+      <div class="np-section">
+        <h3>ตั้งค่าประเภท</h3>
+        <div class="ntgl-row"><div class="ntgl-lbl">🏖 วันหยุดนักขัตฤกษ์<small>แจ้งเตือนก่อนวันหยุด</small></div><label class="switch"><input type="checkbox" id="notif-holiday" checked onchange="saveNotifSettings()"><span class="slider"></span></label></div>
+        <div class="ntgl-row"><div class="ntgl-lbl">🎓 Training<small>แจ้งเตือนกิจกรรม Training</small></div><label class="switch"><input type="checkbox" id="notif-training" checked onchange="saveNotifSettings()"><span class="slider"></span></label></div>
+        <div class="ntgl-row"><div class="ntgl-lbl">📌 Activity<small>Staff of Month, Loyalty Training ฯลฯ</small></div><label class="switch"><input type="checkbox" id="notif-activity" checked onchange="saveNotifSettings()"><span class="slider"></span></label></div>
+        <div class="ntgl-row"><div class="ntgl-lbl">🏪 Suan Son Loi Market</div><label class="switch"><input type="checkbox" id="notif-market" checked onchange="saveNotifSettings()"><span class="slider"></span></label></div>
+        <div class="ntgl-row"><div class="ntgl-lbl">🚯 NO Bin Day</div><label class="switch"><input type="checkbox" id="notif-nobin" onchange="saveNotifSettings()"><span class="slider"></span></label></div>
+        <div class="ntgl-row"><div class="ntgl-lbl">🧹 Cleaning Day</div><label class="switch"><input type="checkbox" id="notif-cleaning" onchange="saveNotifSettings()"><span class="slider"></span></label></div>
+        <div style="margin-top:10px"><div class="ntgl-lbl" style="margin-bottom:4px">⏰ แจ้งเตือนล่วงหน้า</div>
+        <select class="np-select" id="notif-lead" onchange="saveNotifSettings()"><option value="0">วันเดียวกัน</option><option value="1" selected>1 วันก่อน</option><option value="2">2 วันก่อน</option><option value="3">3 วันก่อน</option><option value="7">1 สัปดาห์ก่อน</option></select></div>
+        <div style="margin-top:8px"><div class="ntgl-lbl" style="margin-bottom:4px">🕗 เวลา</div>
+        <select class="np-select" id="notif-time" onchange="saveNotifSettings()"><option value="7">07:00</option><option value="8" selected>08:00</option><option value="9">09:00</option><option value="12">12:00</option></select></div>
+      </div>
+      <div class="np-section"><h3>กิจกรรมที่ตั้งแจ้งเตือนแล้ว</h3><div id="sp-scheduled"></div></div>
+      <div class="np-section"><h3>กิจกรรมใกล้มาถึง 30 วัน</h3><div id="sp-upcoming"></div></div>
+      <div class="np-section"><h3>ประวัติ</h3><div id="sp-history"></div></div>
+      <button onclick="clearAllScheduled()" style="width:100%;padding:10px;border:none;border-radius:8px;background:var(--red-bg);color:var(--red);font-size:0.8rem;font-weight:700;cursor:pointer;margin-bottom:20px;font-family:'Noto Sans Thai','Inter',sans-serif;">🗑 ล้างการแจ้งเตือนทั้งหมด</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="pdf-overlay" id="pdf-overlay">
+  <div class="pdf-box">
+    <h3 id="pdf-title">กำลังสร้าง PDF...</h3>
+    <div class="pdf-bar-wrap"><div class="pdf-bar" id="pdf-bar"></div></div>
+    <div class="pdf-msg" id="pdf-msg">กรุณารอสักครู่</div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_TH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTHS_ABB=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const DAYS_TH=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const DAYS_SHORT=['อา','จ','อ','พ','พฤ','ศ','ส'];
+const YEAR=2026;
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const DISPLAY_DATE=TODAY.getFullYear()<YEAR?new Date(YEAR,0,1):TODAY;
+
+const DEFAULT_HOLIDAYS={'1-1':[{type:'holiday',text:"New Year's Day / วันขึ้นปีใหม่"}],'3-3':[{type:'holiday',text:"Makha Bucha Day / วันมาฆบูชา"}],'4-6':[{type:'holiday',text:"Chakri Memorial Day / วันจักรี"}],'4-13':[{type:'holiday',text:"Songkran Day / วันสงกรานต์"}],'4-14':[{type:'holiday',text:"Songkran Day / วันสงกรานต์"}],'4-15':[{type:'holiday',text:"Songkran Day / วันสงกรานต์"}],'5-1':[{type:'holiday',text:"National Labor Day / วันแรงงานแห่งชาติ"}],'5-4':[{type:'holiday',text:"Royal Coronation Day / วันฉัตรมงคล"}],'6-3':[{type:'holiday',text:"H.M. Queen Suthida's Birthday"}],'7-28':[{type:'holiday',text:"H.M. King Vajiralongkorn's Birthday"}],'8-12':[{type:'holiday',text:"Mother's Day / Queen Sirikit's Birthday"}],'8-13':[{type:'holiday',text:"Substitute Mother's Day / ชดเชยวันแม่"}],'10-13':[{type:'holiday',text:"H.M. King Bhumibol Memorial Day"}],'10-23':[{type:'holiday',text:"Chulalongkorn Memorial Day / วันปิยมหาราช"}],'12-5':[{type:'holiday',text:"Father's Day / King Bhumibol Birthday"}],'12-7':[{type:'holiday',text:"Substitute Father's Day / ชดเชยวันพ่อ"}]};
+
+function computeRecurring(){const extra={};const k=(m,d)=>`${m}-${d}`;for(let m=1;m<=12;m++){const dim=new Date(YEAR,m,0).getDate();let cnt=0;for(let d=1;d<=dim;d++){if(new Date(YEAR,m-1,d).getDay()===6){cnt++;if(cnt===2){extra[k(m,d)]=extra[k(m,d)]||[];extra[k(m,d)].push({type:'market',text:'Suan Son Loi Market  15:00–21:00 Sands Cafe'});break;}}}}const holKeys=new Set(Object.keys(DEFAULT_HOLIDAYS));for(let m=1;m<=12;m++){const dim=new Date(YEAR,m,0).getDate();for(const t of[5,15,25]){let found=false;for(let d=t;d<=Math.min(t+4,dim);d++){const wd=new Date(YEAR,m-1,d).getDay();if(wd>=1&&wd<=5&&!holKeys.has(k(m,d))){extra[k(m,d)]=extra[k(m,d)]||[];extra[k(m,d)].push({type:'nobin',text:'NO Bin Day'});found=true;break;}}if(!found)for(let d=t-1;d>=Math.max(1,t-4);d--){const wd=new Date(YEAR,m-1,d).getDay();if(wd>=1&&wd<=5&&!holKeys.has(k(m,d))){extra[k(m,d)]=extra[k(m,d)]||[];extra[k(m,d)].push({type:'nobin',text:'NO Bin Day'});break;}}}}for(let m=1;m<=12;m++){const dim=new Date(YEAR,m,0).getDate();for(let d=10;d<=Math.min(22,dim);d++){const wd=new Date(YEAR,m-1,d).getDay();if((wd===2||wd===3)&&!holKeys.has(k(m,d))){extra[k(m,d)]=extra[k(m,d)]||[];extra[k(m,d)].push({type:'cleaning',text:'Cleaning Day'});break;}}}return extra;}
+
+const DEFAULT_ACTIVITIES={'1-5':[{type:'activity',text:'End PMS'}],'1-20':[{type:'activity',text:'Staff of the Month'}],'2-13':[{type:'activity',text:"Valentine's Day 💝"}],'2-20':[{type:'activity',text:'Staff of the Month'}],'3-20':[{type:'activity',text:'Staff of the Month'}],'3-22':[{type:'activity',text:'Earth Hour 🌍'}],'4-20':[{type:'activity',text:'Staff of the Month'}],'5-20':[{type:'activity',text:'Staff of the Month'}],'6-20':[{type:'activity',text:'Staff of the Month'}],'6-26':[{type:'activity',text:'Loyalty Training 14:00-15:30'}],'7-20':[{type:'activity',text:'Staff of the Month'}],'7-25':[{type:'activity',text:'Loyalty Training 14:00-15:30'}],'8-20':[{type:'activity',text:'Staff of the Month'}],'8-27':[{type:'activity',text:'Loyalty Training 14:00-15:30'}],'9-22':[{type:'activity',text:'Staff of the Month'}],'10-20':[{type:'activity',text:'Staff of the Month'}],'10-29':[{type:'activity',text:'Loyalty Training 14:00-15:30'}],'11-20':[{type:'activity',text:'Staff of the Month'}],'12-18':[{type:'activity',text:'Loyalty Training 14:00-15:30'}],'12-22':[{type:'activity',text:'Staff of the Month'}],'12-25':[{type:'activity',text:'Christmas Day 🎄'}],'12-31':[{type:'activity',text:"New Year's Eve 🎆"}]};
+
+const DEFAULT_TRAINING={1:["PND 91/90","Town Hall 1st","Select Staff of the Month","New Year Celebration"],2:["First Aid & CPR Training","Green Hotel Registration","Beach & Pool Rescue","Valentine Event"],3:["External Auditor","Blood Donation","Earth Hour","Town Hall","Orientation New Staff"],4:["Songkran Day","How to set KPI 1st","How to set KPI 2nd","Green Hotel Meeting","Food Safety Training"],5:["HOD Meeting","Done KPI in HR Portal","Orientation for Casual & Trainee","Cybersecurity Training","Audit Brand Standard"],6:["Love Life Leaf","AED Training","Training Meeting","Blood Donation","GSTC + Green Hotel Meeting","ICARE Training"],7:["Rules & Regulation","GSTC + Green Hotel Meeting","Big Cleaning Day","ICARE","Town Hall","Catch My Breath"],8:["Basic ReviewPro Training","Town Hall","GSTC + Green Hotel Meeting","Mother's Day Event","Loyalty Training"],9:["Code of Conduct and ICARE","Cleaning Day","Welfare Committee","Town Hall","GSTC + Green Hotel Meeting"],10:["Blood Donation","Cleaning Day","Midyear Evaluation on HR Portal","Orientation","GSTC + Green Hotel Meeting"],11:["Cleaning Day","Orientation for Trainees","Lucky Draw","Thank You Party 2026","Training Meeting"],12:["Suan Son Loi Market Meeting","Christmas Tree Lighting","Brand Standards Audit","Year-End Celebration","New Year Countdown"]};
+
+// ==================== STATE ====================
+function loadState(){try{const s=localStorage.getItem('tplan2026');if(s)return JSON.parse(s);}catch(e){}return null;}
+function buildDefaultState(){const recurring=computeRecurring();const events={};const allKeys=new Set([...Object.keys(DEFAULT_HOLIDAYS),...Object.keys(recurring),...Object.keys(DEFAULT_ACTIVITIES)]);for(const k of allKeys)events[k]=[...(DEFAULT_HOLIDAYS[k]||[]),...(recurring[k]||[]),...(DEFAULT_ACTIVITIES[k]||[])];const notes={};const training={};for(let m=1;m<=12;m++)training[m]=[...DEFAULT_TRAINING[m]];return{events,notes,training};}
+let STATE=loadState()||buildDefaultState();
+async function saveData(){
+  if(USER_ROLE!=='admin'){toast('Staff ไม่สามารถแก้ไขได้',true);return;}
+  try{localStorage.setItem('tplan2026',JSON.stringify(STATE));}catch(e){}
+  toast('💾 กำลังบันทึก...');
+  const ok=await cloudSave(STATE);
+  if(ok){toast('✅ บันทึกและ Sync เรียบร้อย');}
+  else{toast('💾 บันทึกเฉพาะเครื่อง (ไม่ได้ Sync)');} 
+}
+function exportJSON(){const blob=new Blob([JSON.stringify(STATE,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='training_plan_2026.json';a.click();toast('Export เรียบร้อย ✓');}
+function importJSON(ev){const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{STATE=JSON.parse(e.target.result);saveData();renderAll();toast('Import เรียบร้อย ✓');}catch(err){alert('ไฟล์ JSON ไม่ถูกต้อง');}};r.readAsText(file);ev.target.value='';}
+function confirmReset(){if(confirm('รีเซ็ตข้อมูลทั้งหมดกลับค่าเริ่มต้น?')){STATE=buildDefaultState();saveData();renderAll();toast('รีเซ็ตเรียบร้อย');}}
+
+// ==================== HELPERS ====================
+function daysInMonth(m){return new Date(YEAR,m,0).getDate();}
+function weekday(m,d){return new Date(YEAR,m-1,d).getDay();}
+function evKey(m,d){return`${m}-${d}`;}
+
+const TYPE_META={
+  holiday:{cls:'s-hol',dot:'dot-hol',icon:'🏖',label:'Holiday',tcls:'tc-hol',ucls:'type-hol',utlabel:'Holiday',color:'background:var(--red-bg);color:var(--red)'},
+  market:{cls:'s-market',dot:'dot-market',icon:'🏪',label:'Suan Son Loi',tcls:'tc-mkt',ucls:'type-market',utlabel:'Market',color:'background:var(--orange-bg);color:var(--orange)'},
+  nobin:{cls:'s-nobin',dot:'dot-nobin',icon:'🚯',label:'NO Bin Day',tcls:'tc-nb',ucls:'type-nobin',utlabel:'No Bin',color:'background:var(--green-bg);color:var(--green)'},
+  cleaning:{cls:'s-clean',dot:'dot-clean',icon:'🧹',label:'Cleaning Day',tcls:'tc-cl',ucls:'type-clean',utlabel:'Cleaning',color:'background:var(--teal-bg);color:var(--teal)'},
+  activity:{cls:'s-act',dot:'dot-act',icon:'📌',label:'Activity',tcls:'tc-act',ucls:'type-act',utlabel:'Activity',color:'background:var(--gold-bg);color:var(--gold)'},
+  training:{cls:'s-train',dot:'dot-train',icon:'🎓',label:'Training',tcls:'tc-tr',ucls:'type-train',utlabel:'Training',color:'background:var(--train-light);color:var(--train)'},
+  other:{cls:'s-other',dot:'dot-other',icon:'📎',label:'Other',tcls:'tc-other',ucls:'type-other',utlabel:'Other',color:'background:#f1f5f9;color:#475569'},
+};
+function getPriorityCls(evs){for(const t of['holiday','market','nobin','cleaning','training','activity','other']){if(evs.find(e=>e.type===t))return TYPE_META[t].cls;}return'';}
+
+// ==================== VIEW SWITCHING ====================
+let curView='home';
+const VIEW_TITLES={home:['หน้าหลัก','Training Year Plan 2026 · Suan Son Loi Resort'],cal:['ปฏิทินรายเดือน','คลิกวันเพื่อแก้ไขกิจกรรม'],annual:['ภาพรวมรายปี','Training Year Plan 2026 ทั้ง 12 เดือน'],settings:['ตั้งค่า & เพิ่มเติม','จัดการข้อมูล สัญลักษณ์ และการแจ้งเตือน']};
+
+function switchView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item[id^="sb-"]').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  const sb=document.getElementById('sb-'+v);if(sb)sb.classList.add('active');
+  const tb=document.getElementById('tab-'+v);if(tb)tb.classList.add('active');
+  const [title,sub]=VIEW_TITLES[v]||['',''];
+  document.getElementById('dh-title').textContent=title;
+  document.getElementById('dh-sub').textContent=sub;
+  document.getElementById('content-scroll').scrollTop=0;
+  curView=v;
+  if(v==='home')renderHome();
+  if(v==='cal')renderMonthly();
+  if(v==='annual')renderAnnual();
+  if(v==='settings')setTimeout(initShareSection,100);
+}
+
+// ==================== HOME ====================
+function renderHome(){
+  const m=DISPLAY_DATE.getMonth()+1,d=DISPLAY_DATE.getDate(),wd=DISPLAY_DATE.getDay();
+  const evs=STATE.events[evKey(m,d)]||[];
+  const isToday=TODAY.getFullYear()===YEAR;
+
+  // Hero
+  document.getElementById('hero-date-block').innerHTML=`
+    <div class="hero-day-label">${DAYS_TH[wd]}${isToday?' · วันนี้':' · '+MONTHS_TH[m-1]+' '+YEAR}</div>
+    <div class="hero-big">${d}</div>
+    <div class="hero-month">${MONTHS_TH[m-1]} ${YEAR}</div>`;
+
+  document.getElementById('hero-events').innerHTML=evs.length
+    ?evs.map(ev=>`<div class="hero-ev">${TYPE_META[ev.type]?.icon||'📌'} <span style="font-size:0.82rem">${ev.text}</span></div>`).join('')
+    :'<div class="hero-ev" style="opacity:0.6">✨ ไม่มีกิจกรรมพิเศษวันนี้</div>';
+
+  // Stats
+  let totalEvs=0,totalHols=0;
+  for(let mo=1;mo<=12;mo++){for(let day=1;day<=daysInMonth(mo);day++){const es=STATE.events[evKey(mo,day)]||[];totalEvs+=es.length;totalHols+=es.filter(e=>e.type==='holiday').length;}}
+  document.getElementById('hero-stats').innerHTML=`
+    <div class="stat-pill"><div class="stat-num">${totalEvs}</div><div class="stat-lbl">กิจกรรม</div></div>
+    <div class="stat-pill"><div class="stat-num">${totalHols}</div><div class="stat-lbl">วันหยุด</div></div>
+    <div class="stat-pill"><div class="stat-num">12</div><div class="stat-lbl">เดือน</div></div>`;
+
+  // Upcoming
+  const items=getUpcoming(30);
+  const ucHtml=items.length
+    ?items.slice(0,10).map(ev=>ucItemHtml(ev)).join('')
+    :'<div style="text-align:center;color:var(--text3);font-size:0.8rem;padding:16px">ไม่มีกิจกรรมในช่วงนี้</div>';
+  const el=document.getElementById('home-upcoming-list');if(el)el.innerHTML=ucHtml;
+  const elm=document.getElementById('home-upcoming-list-m');if(elm)elm.innerHTML=ucHtml;
+
+  // Sidebar upcoming
+  const sbUp=document.getElementById('sidebar-upcoming');
+  if(sbUp)sbUp.innerHTML=items.slice(0,5).map(ev=>{
+    const mt=TYPE_META[ev.type];
+    const dotColor=ev.type==='training'?'var(--train)':ev.type==='holiday'?'var(--red)':ev.type==='market'?'var(--orange)':ev.type==='nobin'?'var(--green)':ev.type==='cleaning'?'var(--teal)':'var(--gold)';
+    return`<div class="mini-uc" onclick="switchView('cal');setTimeout(()=>openDayDesk(${ev.m},${ev.d}),300)">
+      <div class="mini-uc-dot" style="background:${dotColor}"></div>
+      <div class="mini-uc-info"><div class="mini-uc-text">${ev.text}</div><div class="mini-uc-date">${ev.d} ${MONTHS_ABB[ev.m-1]} · อีก ${ev.daysUntil} วัน</div></div>
+    </div>`;
+  }).join('');
+
+  // This month training
+  const curM=DISPLAY_DATE.getMonth()+1;
+  document.getElementById('home-tr-edit-btn').onclick=()=>openTrainingModal(curM);
+  const trList=STATE.training[curM]||[];
+  document.getElementById('home-training-list').innerHTML=trList.length
+    ?trList.map((t,i)=>`<div class="tsc-item"><span class="tsc-num">${i+1}.</span>${t}</div>`).join('')
+    :'<div style="color:var(--text3);font-size:0.78rem;">ยังไม่มีรายการ</div>';
+
+  // Stats box
+  const trTotal=Object.values(STATE.training).reduce((a,v)=>a+v.length,0);
+  document.getElementById('home-stats-box').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="background:var(--train-bg);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:var(--train)">${trTotal}</div><div style="font-size:0.65rem;color:var(--text3);font-weight:600">Training Items</div></div>
+      <div style="background:var(--red-bg);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:var(--red)">${totalHols}</div><div style="font-size:0.65rem;color:var(--text3);font-weight:600">วันหยุด</div></div>
+      <div style="background:var(--gold-bg);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:var(--gold)">${totalEvs-totalHols}</div><div style="font-size:0.65rem;color:var(--text3);font-weight:600">กิจกรรมอื่นๆ</div></div>
+      <div style="background:var(--sky);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:800;color:var(--blue)">12</div><div style="font-size:0.65rem;color:var(--text3);font-weight:600">เดือน</div></div>
+    </div>`;
+}
+
+function ucItemHtml(ev){
+  const mt=TYPE_META[ev.type]||TYPE_META.activity;
+  let countdown='';
+  if(ev.daysUntil===0)countdown='<span class="uc-today-label">วันนี้!</span>';
+  else if(ev.daysUntil===1)countdown='<span class="uc-tmr-label">พรุ่งนี้</span>';
+  else countdown=`อีก ${ev.daysUntil} วัน`;
+  return`<div class="uc-item" onclick="switchView('cal');setTimeout(()=>openDayDesk(${ev.m},${ev.d}),300)">
+    <div class="uc-date-block"><div class="uc-day-num">${ev.d}</div><div class="uc-mon-lbl">${MONTHS_ABB[ev.m-1]}</div></div>
+    <div class="uc-info">
+      <span class="uc-badge" style="${mt.color}">${mt.icon} ${mt.utlabel}</span>
+      <div class="uc-name">${ev.text}</div>
+      <div class="uc-when">${countdown}</div>
+    </div>
+  </div>`;
+}
+
+function getUpcoming(days){
+  const results=[];
+  for(let i=0;i<=days;i++){
+    const date=new Date(DISPLAY_DATE);date.setDate(DISPLAY_DATE.getDate()+i);
+    if(date.getFullYear()!==YEAR)continue;
+    const m=date.getMonth()+1,d=date.getDate();
+    (STATE.events[evKey(m,d)]||[]).forEach(ev=>results.push({m,d,date:new Date(date),type:ev.type,text:ev.text,daysUntil:i}));
+  }
+  return results;
+}
+
+// ==================== CALENDAR ====================
+let curMonth=DISPLAY_DATE.getMonth()+1;
+let editM=0,editD=0,selType='training';
+
+function renderMonthly(){
+  const m=curMonth;
+  document.getElementById('mnav-en').textContent=MONTHS_EN[m-1];
+  document.getElementById('mnav-th').textContent=MONTHS_TH[m-1]+' '+YEAR;
+  document.getElementById('tsc-edit-btn').onclick=()=>openTrainingModal(m);
+
+  const dim=daysInMonth(m),firstDay=new Date(YEAR,m-1,1).getDay();
+  const todayM=DISPLAY_DATE.getMonth()+1,todayD=DISPLAY_DATE.getDate();
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  const isMobile=window.innerWidth<=768;
+
+  for(let i=0;i<firstDay;i++){const c=document.createElement('div');c.className='cal-cell pre';grid.appendChild(c);}
+  for(let d=1;d<=dim;d++){
+    const wd=weekday(m,d),k=evKey(m,d),evs=STATE.events[k]||[];
+    const c=document.createElement('div');
+    let cls='cal-cell';const pCls=getPriorityCls(evs);
+    if(pCls)cls+=' '+pCls;else if(wd===0)cls+=' s-sun';else if(wd===6)cls+=' s-sat';
+    if(m===todayM&&d===todayD)cls+=' today-cell';
+    c.className=cls;
+    const numEl=document.createElement('span');numEl.className='cal-num';numEl.textContent=d;c.appendChild(numEl);
+    if(evs.length){
+      if(isMobile){
+        const dots=document.createElement('div');dots.className='ev-dots-m';
+        evs.slice(0,4).forEach(ev=>{const dot=document.createElement('div');dot.className='ev-dot '+(TYPE_META[ev.type]?.dot||'dot-act');dots.appendChild(dot);});
+        c.appendChild(dots);
+      } else {
+        evs.forEach(ev=>{
+          const mt=TYPE_META[ev.type]||TYPE_META.activity;
+          const pill=document.createElement('span');pill.className='cal-ev-pill';
+          pill.style=mt.color;pill.textContent=mt.icon+' '+ev.text;pill.title=ev.text;
+          c.appendChild(pill);
+        });
+      }
+    }
+    if(isMobile){c.addEventListener('click',()=>{if(USER_ROLE==='admin')openDayMobile(m,d);else openDayStaffView(m,d);});}
+    else{c.addEventListener('click',()=>{if(USER_ROLE==='admin')openDayDesk(m,d);else openDayStaffView(m,d);});}
+    grid.appendChild(c);
+  }
+
+  // Training list
+  const tscList=document.getElementById('tsc-list');
+  tscList.innerHTML=(STATE.training[m]||[]).map((t,i)=>`<div class="tsc-item"><span class="tsc-num">${i+1}.</span>${t}</div>`).join('');
+}
+
+// ---- Desktop day detail ----
+function openDayDesk(m,d){
+  editM=m;editD=d;
+  const wd=weekday(m,d);
+  document.getElementById('cdd-title').textContent=`${d} ${MONTHS_TH[m-1]} ${YEAR}`;
+  document.getElementById('cdd-sub').textContent=`${DAYS_TH[wd]} · ${MONTHS_ABB[m-1]} ${d}`;
+  document.getElementById('d-note').value=STATE.notes[evKey(m,d)]||'';
+  document.getElementById('cdd-add-box').style.display='block';
+  renderCddEvList();
+  buildChips('desktop-chips','desk');
+}
+function renderCddEvList(){
+  const evs=STATE.events[evKey(editM,editD)]||[];
+  const el=document.getElementById('cdd-ev-list');el.innerHTML='';
+  if(!evs.length){el.innerHTML='<div class="cdd-empty">ยังไม่มีกิจกรรม</div>';return;}
+  evs.forEach((ev,i)=>{
+    const mt=TYPE_META[ev.type]||TYPE_META.activity;
+    const row=document.createElement('div');row.className='cdd-ev';
+    row.innerHTML=`<span class="cdd-badge" style="${mt.color}">${mt.icon} ${mt.label}</span><span class="cdd-name">${ev.text}</span><button class="cdd-del" onclick="deskRemoveEv(${i})">✕</button>`;
+    el.appendChild(row);
+  });
+}
+function deskRemoveEv(i){const k=evKey(editM,editD);if(!STATE.events[k])return;STATE.events[k].splice(i,1);if(!STATE.events[k].length)delete STATE.events[k];renderCddEvList();}
+function deskAddEvent(){
+  const text=document.getElementById('d-ev-text').value.trim();
+  if(!text){document.getElementById('d-ev-text').focus();return;}
+  const k=evKey(editM,editD);if(!STATE.events[k])STATE.events[k]=[];
+  STATE.events[k].push({type:selType,text});
+  document.getElementById('d-ev-text').value='';renderCddEvList();
+}
+function deskSaveDay(){if(USER_ROLE!=='admin'){toast('Staff ไม่สามารถแก้ไขได้',true);return;}
+  const k=evKey(editM,editD);
+  const note=document.getElementById('d-note').value.trim();
+  if(note)STATE.notes[k]=note;else delete STATE.notes[k];
+  saveData();renderAll();toast('บันทึกแล้ว ✓');
+}
+
+// ---- Mobile day sheet ----
+function openDayMobile(m,d){
+  editM=m;editD=d;
+  const wd=weekday(m,d);
+  document.getElementById('bs-title').textContent=`${d} ${MONTHS_TH[m-1]} ${YEAR}`;
+  document.getElementById('bs-sub').textContent=`${DAYS_TH[wd]} · ${MONTHS_ABB[m-1]} ${d}`;
+  document.getElementById('m-note').value=STATE.notes[evKey(m,d)]||'';
+  buildChips('mobile-chips','mobile');
+  renderBsEvList();
+  document.getElementById('bs-overlay').classList.add('open');
+}
+function renderBsEvList(){
+  const evs=STATE.events[evKey(editM,editD)]||[];
+  const el=document.getElementById('bs-ev-list');el.innerHTML='';
+  if(!evs.length){el.innerHTML='<div style="color:var(--text3);font-size:0.78rem;padding:4px 0 8px">ยังไม่มีกิจกรรม</div>';return;}
+  evs.forEach((ev,i)=>{
+    const mt=TYPE_META[ev.type]||TYPE_META.activity;
+    const row=document.createElement('div');row.className='cdd-ev';
+    row.innerHTML=`<span class="cdd-badge" style="${mt.color}">${mt.icon} ${mt.label}</span><span class="cdd-name">${ev.text}</span><button class="cdd-del" onclick="bsRemoveEv(${i})">✕</button>`;
+    el.appendChild(row);
+  });
+}
+function bsRemoveEv(i){const k=evKey(editM,editD);if(!STATE.events[k])return;STATE.events[k].splice(i,1);if(!STATE.events[k].length)delete STATE.events[k];renderBsEvList();}
+function mobileAddEvent(){
+  const text=document.getElementById('m-ev-text').value.trim();
+  if(!text){document.getElementById('m-ev-text').focus();return;}
+  const k=evKey(editM,editD);if(!STATE.events[k])STATE.events[k]=[];
+  STATE.events[k].push({type:selType,text});
+  document.getElementById('m-ev-text').value='';renderBsEvList();
+}
+function mobileSaveDay(){if(USER_ROLE!=='admin'){toast('Staff ไม่สามารถแก้ไขได้',true);return;}
+  const k=evKey(editM,editD);
+  const note=document.getElementById('m-note').value.trim();
+  if(note)STATE.notes[k]=note;else delete STATE.notes[k];
+  saveData();renderAll();closeBS();toast('บันทึกแล้ว ✓');
+}
+function closeBS(){document.getElementById('bs-overlay').classList.remove('open');}
+function closeBsOut(e){if(e.target===document.getElementById('bs-overlay'))closeBS();}
+
+// ---- Type chips ----
+const CHIP_DEFS=[{type:'holiday',label:'🏖 Holiday',cls:'tc-hol'},{type:'market',label:'🏪 Market',cls:'tc-mkt'},{type:'nobin',label:'🚯 No Bin',cls:'tc-nb'},{type:'cleaning',label:'🧹 Clean',cls:'tc-cl'},{type:'training',label:'🎓 Training',cls:'tc-tr'},{type:'activity',label:'📌 Activity',cls:'tc-act'},{type:'other',label:'📎 Other',cls:'tc-other'}];
+function buildChips(containerId,mode){
+  const el=document.getElementById(containerId);el.innerHTML='';
+  CHIP_DEFS.forEach(chip=>{
+    const div=document.createElement('div');
+    div.className='tc '+chip.cls+(chip.type===selType?' sel':'');
+    div.textContent=chip.label;div.dataset.type=chip.type;
+    div.onclick=()=>{selType=chip.type;buildChips(containerId,mode);};
+    el.appendChild(div);
+  });
+}
+
+function prevMonth(){if(curMonth>1){curMonth--;renderMonthly();}}
+function nextMonth(){if(curMonth<12){curMonth++;renderMonthly();}}
+
+// ==================== ANNUAL ====================
+function renderAnnual(){
+  const grid=document.getElementById('annual-grid');grid.innerHTML='';
+  const todayM=DISPLAY_DATE.getMonth()+1,todayD=DISPLAY_DATE.getDate();
+  const isMobile=window.innerWidth<=768;
+  for(let m=1;m<=12;m++){
+    const dim=daysInMonth(m),firstDay=new Date(YEAR,m-1,1).getDay();
+    const card=document.createElement('div');card.className='amc';
+    card.innerHTML=`<div class="amc-hdr"><span class="amc-abbr">${MONTHS_ABB[m-1]}</span><span class="amc-name">${MONTHS_TH[m-1]}</span><button class="amc-edit" onclick="openTrainingModal(${m})">✏</button></div>`;
+    const wdRow=document.createElement('div');wdRow.className='amc-wd-row';
+    ['อา','จ','อ','พ','พฤ','ศ','ส'].forEach(w=>{const d=document.createElement('div');d.className='amc-wd';d.textContent=w;wdRow.appendChild(d);});
+    card.appendChild(wdRow);
+    const miniGrid=document.createElement('div');miniGrid.className='amc-grid';
+    for(let i=0;i<firstDay;i++){const c=document.createElement('div');c.className='amc-cell pre';miniGrid.appendChild(c);}
+    for(let d=1;d<=dim;d++){
+      const wd=weekday(m,d),k=evKey(m,d),evs=STATE.events[k]||[];
+      const c=document.createElement('div');let cls='amc-cell';
+      const pCls=getPriorityCls(evs);
+      if(pCls)cls+=' '+pCls.replace('s-','').trim().split(' ').map(x=>'s-'+x).join(' ');
+      else if(wd===0)cls+=' s-sun';else if(wd===6)cls+=' s-sat';
+      if(m===todayM&&d===todayD)cls+=' today-cell';
+      c.className=cls;c.textContent=d;
+      c.onclick=()=>{curMonth=m;switchView('cal');setTimeout(()=>{if(isMobile)openDayMobile(m,d);else openDayDesk(m,d);},300);};
+      miniGrid.appendChild(c);
+    }
+    card.appendChild(miniGrid);
+    const allEvs=[];for(let d=1;d<=dim;d++){(STATE.events[evKey(m,d)]||[]).forEach(ev=>allEvs.push({d,ev}));}
+    if(allEvs.length){
+      const prev=document.createElement('div');prev.className='amc-evs';
+      allEvs.slice(0,4).forEach(({d,ev})=>{
+        const mt=TYPE_META[ev.type]||TYPE_META.activity;
+        const pill=document.createElement('div');pill.className='amc-ev-pill';
+        pill.style=mt.color;pill.textContent=`${d} — ${mt.icon} ${ev.text.substring(0,22)}`;
+        prev.appendChild(pill);
+      });
+      if(allEvs.length>3){const more=document.createElement('div');more.className='amc-ev-pill';more.style='color:var(--text3)';more.textContent=`+${allEvs.length-3} เพิ่มเติม`;prev.appendChild(more);}
+      card.appendChild(prev);
+    }
+    grid.appendChild(card);
+  }
+}
+
+// ==================== TRAINING MODAL ====================
+let editTrainingM=0;
+function openTrainingModal(m){
+  editTrainingM=m||(DISPLAY_DATE.getMonth()+1);
+  document.getElementById('tr-modal-title').textContent=`Training — ${MONTHS_TH[editTrainingM-1]} ${YEAR}`;
+  renderTrEditList();
+  document.getElementById('tr-modal-overlay').classList.add('open');
+}
+function renderTrEditList(){
+  const list=STATE.training[editTrainingM]||[],el=document.getElementById('tr-edit-list');el.innerHTML='';
+  if(!list.length){el.innerHTML='<div style="color:var(--text3);font-size:0.78rem;padding:4px">ยังไม่มีรายการ</div>';return;}
+  list.forEach((t,i)=>{const row=document.createElement('div');row.className='tr-item';row.innerHTML=`<span class="tr-num">${i+1}.</span><span class="tr-text">${t}</span><button class="tr-del" onclick="trRemove(${i})">✕</button>`;el.appendChild(row);});
+}
+function trRemove(i){STATE.training[editTrainingM].splice(i,1);renderTrEditList();}
+function trAddItem(){const text=document.getElementById('tr-new-text').value.trim();if(!text){document.getElementById('tr-new-text').focus();return;}if(!STATE.training[editTrainingM])STATE.training[editTrainingM]=[];STATE.training[editTrainingM].push(text);document.getElementById('tr-new-text').value='';renderTrEditList();}
+function trSave(){if(USER_ROLE!=='admin'){toast('Staff ไม่สามารถแก้ไขได้',true);return;}saveData();renderAll();closeTrainingModal();toast('บันทึก Training แล้ว ✓');}
+function closeTrainingModal(){document.getElementById('tr-modal-overlay').classList.remove('open');}
+function closeTrOut(e){if(e.target===document.getElementById('tr-modal-overlay'))closeTrainingModal();}
+
+// ==================== RENDER ALL ====================
+function renderAll(){
+  if(curView==='home')renderHome();
+  if(curView==='cal')renderMonthly();
+  if(curView==='annual')renderAnnual();
+}
+
+// ==================== EXPORT MENU ====================
+function openExportMenu(e){e.stopPropagation();const m=document.getElementById('export-menu');m.classList.toggle('open');}
+function closeExportMenu(){document.getElementById('export-menu').classList.remove('open');}
+document.addEventListener('click',closeExportMenu);
+
+// ==================== TOAST ====================
+const toastEl=document.getElementById('toast');let toastTimer;
+function toast(msg,err=false){toastEl.textContent=msg;toastEl.className='toast'+(err?' err':'');toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2500);}
+
+// ==================== PDF PROGRESS ====================
+function setPdfProgress(show,title='',msg='',pct=0){const el=document.getElementById('pdf-overlay');if(show){el.classList.add('show');document.getElementById('pdf-title').textContent=title;document.getElementById('pdf-msg').textContent=msg;document.getElementById('pdf-bar').style.width=pct+'%';}else el.classList.remove('show');}
+
+// ==================== NOTIFICATION ====================
+let notifSettings={holiday:true,activity:true,market:true,nobin:false,cleaning:false,training:true,lead:1,time:8};
+let scheduledNotifs=[],notifHistory=[];
+function loadNotifData(){try{const s=localStorage.getItem('tplan2026_notif');if(s)notifSettings={...notifSettings,...JSON.parse(s)};const h=localStorage.getItem('tplan2026_notif_history');if(h)notifHistory=JSON.parse(h);const sc=localStorage.getItem('tplan2026_scheduled');if(sc)scheduledNotifs=JSON.parse(sc);}catch(e){}applyNotifUI();}
+function saveNotifSettings(){notifSettings={holiday:document.getElementById('notif-holiday').checked,activity:document.getElementById('notif-activity').checked,market:document.getElementById('notif-market').checked,nobin:document.getElementById('notif-nobin').checked,cleaning:document.getElementById('notif-cleaning').checked,training:document.getElementById('notif-training').checked,lead:parseInt(document.getElementById('notif-lead').value),time:parseInt(document.getElementById('notif-time').value)};localStorage.setItem('tplan2026_notif',JSON.stringify(notifSettings));toast('บันทึกการตั้งค่าแจ้งเตือน ✓');}
+function applyNotifUI(){document.getElementById('notif-holiday').checked=notifSettings.holiday;document.getElementById('notif-activity').checked=notifSettings.activity;document.getElementById('notif-market').checked=notifSettings.market;document.getElementById('notif-nobin').checked=notifSettings.nobin;document.getElementById('notif-cleaning').checked=notifSettings.cleaning;document.getElementById('notif-training').checked=notifSettings.training!==false;document.getElementById('notif-lead').value=String(notifSettings.lead);document.getElementById('notif-time').value=String(notifSettings.time);}
+function getPermission(){return('Notification' in window)?Notification.permission:'unsupported';}
+async function requestPermission(){
+  if(!('Notification' in window)){toast('เบราว์เซอร์ไม่รองรับการแจ้งเตือน',true);return;}
+  if(Notification.permission==='denied'){
+    toast('การแจ้งเตือนถูกบล็อก — คลิกไอคอน 🔒 ใน address bar > Site settings > Notifications > Allow',true);
+    return;
+  }
+  const perm=await Notification.requestPermission();
+  updatePermUI(perm);
+  if(perm==='granted'){toast('✅ อนุญาตแจ้งเตือนเรียบร้อย');rescheduleAll();}
+  else if(perm==='denied'){toast('❌ ถูกบล็อก — ไปที่ Browser Settings > Privacy > Notifications',true);}
+  else toast('❌ ยังไม่ได้อนุญาต',true);
+}
+function updatePermUI(perm){const badge=document.getElementById('perm-badge'),desc=document.getElementById('perm-desc'),btn=document.getElementById('perm-btn');if(!badge)return;if(perm==='granted'){badge.className='perm-status ps-ok';badge.textContent='✅ อนุญาตแล้ว';desc.textContent='เปิดใช้การแจ้งเตือนแล้ว';btn.style.display='none';}else if(perm==='denied'){badge.className='perm-status ps-no';badge.textContent='❌ ถูกบล็อก';desc.textContent='ไปที่ตั้งค่าเบราว์เซอร์เพื่ออนุญาต';btn.style.display='none';}else{badge.className='perm-status ps-wait';badge.textContent='⏳ ยังไม่ได้อนุญาต';btn.style.display='block';}}
+function sendNotification(title,body,tag){if(getPermission()!=='granted')return;try{const n=new Notification(title,{body,tag:tag||'tplan-'+Date.now(),icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230f1e33"/><text y="44" x="8" font-size="42">📅</text></svg>',vibrate:[200,100,200]});n.onclick=()=>{window.focus();n.close();};addNotifHistory(title,body);}catch(e){}}
+async function sendTestNotif(){
+  if(!('Notification' in window)){toast('เบราว์เซอร์ไม่รองรับการแจ้งเตือน',true);return;}
+  if(Notification.permission==='denied'){toast('การแจ้งเตือนถูกบล็อก — กรุณาไปที่ Settings > Site permissions > Notifications เพื่ออนุญาต',true);return;}
+  if(Notification.permission!=='granted'){
+    const perm=await Notification.requestPermission();
+    updatePermUI(perm);
+    if(perm!=='granted'){toast('❌ ไม่ได้รับอนุญาต กรุณาอนุญาตใน browser settings',true);return;}
+  }
+  try{
+    const n=new Notification('🔔 Training Plan 2026',{body:'✅ ระบบแจ้งเตือนทำงานปกติ! คุณจะได้รับแจ้งเตือนกิจกรรมตามที่ตั้งค่า',tag:'test'});
+    n.onclick=()=>{window.focus();n.close();};
+    toast('✅ ส่งการแจ้งเตือนทดสอบแล้ว');
+    addNotifHistory('🔔 Training Plan 2026','ทดสอบการแจ้งเตือน');
+  }catch(e){toast('เกิดข้อผิดพลาด: '+e.message,true);}
+}
+function addNotifHistory(title,body){notifHistory.unshift({title,body,time:new Date().toISOString()});if(notifHistory.length>20)notifHistory=notifHistory.slice(0,20);localStorage.setItem('tplan2026_notif_history',JSON.stringify(notifHistory));renderSpHistory();}
+function getUpcoming30(){const results=[];for(let i=0;i<=30;i++){const date=new Date(DISPLAY_DATE);date.setDate(DISPLAY_DATE.getDate()+i);if(date.getFullYear()!==YEAR)continue;const m=date.getMonth()+1,d=date.getDate();(STATE.events[evKey(m,d)]||[]).forEach(ev=>{if(!notifSettings[ev.type])return;results.push({m,d,date:new Date(date),type:ev.type,text:ev.text,daysUntil:i});});}return results;}
+function dotColor(type){return type==='training'?'var(--train)':type==='holiday'?'var(--red)':type==='market'?'var(--orange)':type==='nobin'?'var(--green)':type==='cleaning'?'var(--teal)':'var(--gold)';}
+function toggleSchedule(m,d,type,text,btn){const existing=scheduledNotifs.findIndex(s=>s.m===m&&s.d===d&&s.text===text);if(existing>=0){const s=scheduledNotifs[existing];if(s.timerId)clearTimeout(s.timerId);scheduledNotifs.splice(existing,1);btn.className='nc-btn';btn.textContent='+ แจ้งเตือน';}else{const notifDate=new Date(YEAR,m-1,d);notifDate.setDate(notifDate.getDate()-notifSettings.lead);notifDate.setHours(notifSettings.time,0,0,0);const msUntil=notifDate.getTime()-Date.now();let timerId=null;if(msUntil>0){timerId=setTimeout(()=>{const lead=notifSettings.lead;const when=lead===0?'วันนี้':lead===1?'พรุ่งนี้':`อีก ${lead} วัน`;sendNotification(`🔔 Training Plan — ${when}`,`📌 ${text} (${MONTHS_TH[m-1]} ${d})`,`ev-${m}-${d}-${text}`);scheduledNotifs=scheduledNotifs.filter(s=>!(s.m===m&&s.d===d&&s.text===text));localStorage.setItem('tplan2026_scheduled',JSON.stringify(scheduledNotifs.map(x=>({...x,timerId:undefined}))));renderSpScheduled();},msUntil);}scheduledNotifs.push({m,d,type,text,scheduledFor:notifDate.toISOString(),timerId});btn.className='nc-btn active';btn.textContent='✅ กำหนดแล้ว';toast(`✅ จะแจ้งเตือน: ${notifDate.toLocaleDateString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}`);}localStorage.setItem('tplan2026_scheduled',JSON.stringify(scheduledNotifs.map(s=>({...s,timerId:undefined}))));renderSpScheduled();updateNotifBadge();}
+function rescheduleAll(){const now=Date.now();scheduledNotifs.forEach((s,idx)=>{const fireAt=new Date(s.scheduledFor).getTime();if(fireAt>now){s.timerId=setTimeout(()=>{const lead=notifSettings.lead;const when=lead===0?'วันนี้':lead===1?'พรุ่งนี้':`อีก ${lead} วัน`;sendNotification(`🔔 Training Plan — ${when}`,`📌 ${s.text} (${MONTHS_TH[s.m-1]} ${s.d})`,`ev-${s.m}-${s.d}-${s.text}`);scheduledNotifs.splice(idx,1);localStorage.setItem('tplan2026_scheduled',JSON.stringify(scheduledNotifs.map(x=>({...x,timerId:undefined}))));renderSpScheduled();},fireAt-now);}else{scheduledNotifs.splice(idx,1);}});}
+function clearAllScheduled(){if(!confirm('ล้างการแจ้งเตือนทั้งหมด?'))return;scheduledNotifs.forEach(s=>{if(s.timerId)clearTimeout(s.timerId);});scheduledNotifs=[];localStorage.removeItem('tplan2026_scheduled');renderSpScheduled();updateNotifBadge();toast('ล้างการแจ้งเตือนแล้ว');}
+function updateNotifBadge(){const count=scheduledNotifs.filter(s=>new Date(s.scheduledFor)>new Date()).length;['badge-d','badge-m'].forEach(id=>{const b=document.getElementById(id);if(!b)return;b.style.display=count>0?'flex':'none';b.textContent=count;});}
+function renderSpScheduled(){const el=document.getElementById('sp-scheduled');if(!el)return;const active=scheduledNotifs.filter(s=>new Date(s.scheduledFor)>new Date());if(!active.length){el.innerHTML='<div class="np-empty">ยังไม่มีการแจ้งเตือนที่กำหนดไว้</div>';return;}el.innerHTML=active.map(s=>`<div class="nc"><div class="nc-dot" style="background:${dotColor(s.type)}"></div><div class="nc-info"><div class="nc-date">แจ้งเตือน: ${new Date(s.scheduledFor).toLocaleDateString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div><div class="nc-text">${s.text}</div><div class="nc-when">${MONTHS_TH[s.m-1]} ${s.d}</div></div><button class="nc-btn cancel" onclick="toggleSchedule(${s.m},${s.d},'${s.type}','${s.text.replace(/'/g,"\\'")}',this)">✕ ยกเลิก</button></div>`).join('');}
+function renderSpUpcoming(){const el=document.getElementById('sp-upcoming');if(!el)return;const upcoming=getUpcoming30();if(!upcoming.length){el.innerHTML='<div class="np-empty">ไม่มีกิจกรรมใน 30 วัน</div>';return;}el.innerHTML=upcoming.map(ev=>{const isScheduled=scheduledNotifs.some(s=>s.m===ev.m&&s.d===ev.d&&s.text===ev.text);const countdown=ev.daysUntil===0?'วันนี้!':ev.daysUntil===1?'พรุ่งนี้':`อีก ${ev.daysUntil} วัน`;return`<div class="nc"><div class="nc-dot" style="background:${dotColor(ev.type)}"></div><div class="nc-info"><div class="nc-date">${ev.date.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short'})} · ${countdown}</div><div class="nc-text">${ev.text}</div></div><button class="${isScheduled?'nc-btn active':'nc-btn'}" onclick="toggleSchedule(${ev.m},${ev.d},'${ev.type}','${ev.text.replace(/'/g,"\\'")}',this)">${isScheduled?'✅ กำหนดแล้ว':'+ แจ้งเตือน'}</button></div>`;}).join('');}
+function renderSpHistory(){const el=document.getElementById('sp-history');if(!el)return;if(!notifHistory.length){el.innerHTML='<div class="np-empty">ยังไม่มีประวัติ</div>';return;}el.innerHTML=notifHistory.map(h=>{const dt=new Date(h.time);const ts=dt.toLocaleDateString('th-TH',{day:'numeric',month:'short'})+' '+dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});return`<div class="nc" style="flex-direction:column;gap:2px"><div style="font-size:0.74rem;font-weight:600;color:var(--text)">${h.title}</div><div style="font-size:0.68rem;color:var(--text2)">${h.body}</div><div style="font-size:0.62rem;color:var(--text3)">${ts}</div></div>`;}).join('');}
+function openNotifPanel(){updatePermUI(getPermission());renderSpScheduled();renderSpUpcoming();renderSpHistory();document.getElementById('notif-overlay').classList.add('open');}
+function closeNotifPanel(){document.getElementById('notif-overlay').classList.remove('open');}
+function closeNotifOut(e){if(e.target===document.getElementById('notif-overlay'))closeNotifPanel();}
+
+// ==================== EXCEL EXPORT ====================
+const XLSX_COLORS={holiday:{bg:'FFFCE4EC',font:'FFC62828',bold:true},market:{bg:'FFFFF8E1',font:'FFD84315',bold:true},nobin:{bg:'FFE8F5E9',font:'FF1B5E20',bold:true},cleaning:{bg:'FFE3F2FD',font:'FF0891B2',bold:true},activity:{bg:'FFFFF3CD',font:'FFB45309',bold:false},training:{bg:'FFF5F3FF',font:'FF7C3AED',bold:true},weekend:{bg:'FFF8FAFC',font:'FF555555',bold:false},sun:{bg:'FFFFF5F5',font:'FF777777',bold:false},default:{bg:'FFFFFFFF',font:'FF111111',bold:false},header:{bg:'FF0F1E33',font:'FFFFFFFF',bold:true},monthLbl:{bg:'FF2563EB',font:'FFFFFFFF',bold:true},trainSummary:{bg:'FFF5F3FF',font:'FF0F1E33',bold:false},pre:{bg:'FFF8FAFC',font:'FFAAAAAA',bold:false}};
+function getDayColorKey(m,d){const k=evKey(m,d),evs=STATE.events[k]||[],wd=weekday(m,d);for(const t of['holiday','market','nobin','cleaning','training','activity','other']){if(evs.find(e=>e.type===t))return t;}if(wd===0)return'sun';if(wd===6)return'weekend';return'default';}
+function cellStyle(colorKey,extra={}){const c=XLSX_COLORS[colorKey]||XLSX_COLORS.default;return{font:{name:'Arial',sz:extra.sz||9,bold:c.bold||extra.bold||false,color:{rgb:c.font}},fill:{fgColor:{rgb:c.bg}},alignment:{wrapText:true,vertical:'top',horizontal:extra.halign||'left'}};}
+function setCell(ws,row,col,value,colorKey,extra={}){const addr=XLSX.utils.encode_cell({r:row,c:col});ws[addr]={v:value,t:'s',s:cellStyle(colorKey,extra)};}
+const TRAINING_COL=37;
+function buildAnnualSheet(){const ws={},colWidths=[],merges=[];for(let c=0;c<=TRAINING_COL;c++)colWidths.push({wch:c<TRAINING_COL?4.5:30});setCell(ws,0,0,'Training Year Plan 2026','header',{bold:true,sz:14,halign:'center'});merges.push({s:{r:0,c:0},e:{r:0,c:TRAINING_COL}});let row=1;const dayAbbr=['อา','จ','อ','พ','พฤ','ศ','ส'];const ICONS={holiday:'🏖',market:'🏪',nobin:'🚯',cleaning:'🧹',activity:'📌',training:'🎓'};for(let m=1;m<=12;m++){const dim=daysInMonth(m),firstDay=new Date(YEAR,m-1,1).getDay();setCell(ws,row,0,`${MONTHS_ABB[m-1]} — ${MONTHS_TH[m-1]} ${YEAR}`,'monthLbl',{bold:true,sz:10});merges.push({s:{r:row,c:0},e:{r:row,c:TRAINING_COL-1}});setCell(ws,row,TRAINING_COL,'Training & Activities','header',{bold:true,sz:9,halign:'center'});row++;for(let c=0;c<37;c++)setCell(ws,row,c,dayAbbr[c%7],c%7===0?'sun':c%7===6?'weekend':'header',{sz:8,halign:'center'});setCell(ws,row,TRAINING_COL,'Summary','header',{sz:8,halign:'center'});row++;const trList=STATE.training[m]||[];const trText=trList.map((t,i)=>`${i+1}. ${t}`).join('\n');for(let week=0;week<6;week++){let hasContent=false;for(let wd=0;wd<7;wd++){const col=week*7+wd;const d=col-firstDay+1;if(d<1||d>dim){setCell(ws,row,col,'','pre');continue;}hasContent=true;const colorKey=getDayColorKey(m,d);const k=evKey(m,d),evs=STATE.events[k]||[],note=STATE.notes[k]||'';let txt=String(d);evs.forEach(e=>txt+='\n'+(ICONS[e.type]||'•')+' '+e.text);if(note)txt+='\n📝 '+note;setCell(ws,row,col,txt,colorKey,{sz:8});}if(!hasContent&&week>3)break;if(week===0){setCell(ws,row,TRAINING_COL,trText,'trainSummary',{sz:8});merges.push({s:{r:row,c:TRAINING_COL},e:{r:row+5,c:TRAINING_COL}});}row++;}}row++;setCell(ws,row,0,'LEGEND:','default',{bold:true,sz:9});const legItems=[['🏖 Holiday วันหยุด','holiday'],['🏪 Suan Son Loi','market'],['🚯 NO Bin Day','nobin'],['🧹 Cleaning Day','cleaning'],['🎓 Training','training'],['📌 Activity กิจกรรม','activity']];legItems.forEach(([label,key],i)=>{setCell(ws,row,1+i*3,label,key,{sz:8,bold:true,halign:'center'});setCell(ws,row,2+i*3,'',key);setCell(ws,row,3+i*3,'',key);merges.push({s:{r:row,c:1+i*3},e:{r:row,c:3+i*3}});});ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:row,c:TRAINING_COL}});ws['!cols']=colWidths;ws['!merges']=merges;ws['!rows']=[];ws['!rows'][0]={hpt:36};return ws;}
+function buildMonthSheet(m){const ws={},colWidths=[],merges=[];for(let c=0;c<=7;c++)colWidths.push({wch:c<7?16:35});const ICONS={holiday:'🏖',market:'🏪',nobin:'🚯',cleaning:'🧹',activity:'📌',training:'🎓'};const dim=daysInMonth(m),firstDay=new Date(YEAR,m-1,1).getDay();const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];setCell(ws,0,0,`${MONTHS_EN[m-1]} ${YEAR} — Training Plan`,'header',{bold:true,sz:14,halign:'center'});merges.push({s:{r:0,c:0},e:{r:0,c:7}});let row=1;for(let c=0;c<7;c++)setCell(ws,row,c,dayNames[c],c===0?'sun':c===6?'weekend':'header',{sz:9,bold:true,halign:'center'});setCell(ws,row,7,'Training Summary','header',{sz:9,bold:true,halign:'center'});row++;const trList=STATE.training[m]||[];const trText=trList.map((t,i)=>`${i+1}. ${t}`).join('\n');let trWritten=false;for(let week=0;week<6;week++){let hasContent=false;for(let wd=0;wd<7;wd++){const d=week*7+wd-firstDay+1;if(d<1||d>dim){setCell(ws,row,wd,'','pre');continue;}hasContent=true;const colorKey=getDayColorKey(m,d);const k=evKey(m,d),evs=STATE.events[k]||[],note=STATE.notes[k]||'';let txt=String(d);evs.forEach(e=>txt+='\n'+(ICONS[e.type]||'•')+' '+e.text);if(note)txt+='\n📝 '+note;setCell(ws,row,wd,txt,colorKey,{sz:9});}if(!hasContent&&week>3)break;if(!trWritten){setCell(ws,row,7,trText,'trainSummary',{sz:9});merges.push({s:{r:row,c:7},e:{r:row+5,c:7}});trWritten=true;}row++;}ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:row+1,c:7}});ws['!cols']=colWidths;ws['!merges']=merges;ws['!rows']=[];ws['!rows'][0]={hpt:32};return ws;}
+function exportExcelAnnual(){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,buildAnnualSheet(),'Annual 2026');XLSX.writeFile(wb,'Training_Year_Plan_2026_Annual.xlsx');toast('Export Excel รายปี เรียบร้อย ✓');}
+function exportExcelMonthly(){const wb=XLSX.utils.book_new();for(let m=1;m<=12;m++)XLSX.utils.book_append_sheet(wb,buildMonthSheet(m),MONTHS_EN[m-1]);XLSX.writeFile(wb,'Training_Year_Plan_2026_Monthly.xlsx');toast('Export Excel 12 Sheets เรียบร้อย ✓');}
+function exportExcelCombined(){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,buildAnnualSheet(),'Annual Overview');for(let m=1;m<=12;m++)XLSX.utils.book_append_sheet(wb,buildMonthSheet(m),MONTHS_ABB[m-1]);XLSX.writeFile(wb,'Training_Year_Plan_2026_Combined.xlsx');toast('Export Excel Combined เรียบร้อย ✓');}
+
+// ==================== PDF ====================
+const PDF_COLORS={holiday:{fill:[252,228,236],text:[198,40,40]},market:{fill:[255,248,225],text:[216,67,21]},nobin:{fill:[232,245,233],text:[27,94,32]},cleaning:{fill:[227,242,253],text:[8,145,178]},activity:{fill:[255,243,205],text:[180,83,9]},training:{fill:[243,229,245],text:[124,58,237]},weekend:{fill:[240,244,248],text:[80,80,80]},sun:{fill:[253,244,244],text:[110,60,60]},pre:{fill:[248,250,252],text:[180,180,180]},header:{fill:[15,30,51],text:[255,255,255]},month:{fill:[37,99,235],text:[255,255,255]},trainSummary:{fill:[245,243,255],text:[15,30,51]},
+  other:{fill:[248,250,252],text:[71,85,105]},default:{fill:[255,255,255],text:[30,30,30]}};
+const PDF_TYPE_LABEL={holiday:'Holiday',market:'Suan Son Loi',nobin:'No Bin Day',cleaning:'Cleaning Day',activity:'Activity',training:'Training',other:'Other'};
+const DAY_SHORT_EN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function pdfColor(key){return PDF_COLORS[key]||PDF_COLORS.default;}
+function getDayColorKeyPDF(m,d){const k=evKey(m,d),evs=STATE.events[k]||[],wd=weekday(m,d);for(const t of['holiday','market','nobin','cleaning','training','activity','other']){if(evs.find(e=>e.type===t))return t;}if(wd===0)return'sun';if(wd===6)return'weekend';return'default';}
+// PDF: strip Thai, keep ASCII - handle "English / Thai" mixed strings
+function pdfSafe(str){
+  if(!str)return'';
+  if(!/[^\x00-\x7F]/.test(str))return str;
+  // Split by / and keep non-empty ASCII parts joined with " / "
+  const parts=str.split('/');
+  const asciiParts=parts.map(p=>p.replace(/[^\x00-\x7F]/g,'').replace(/\s+/g,' ').trim()).filter(p=>p.length>0);
+  if(asciiParts.length>0)return asciiParts.join(' / ').trim();
+  // Full Thai word map
+  const thaiMap={
+    'วันขึ้นปีใหม่':'New Years Day','วันมาฆบูชา':'Makha Bucha Day',
+    'วันจักรี':'Chakri Memorial Day','วันสงกรานต์':'Songkran Day',
+    'วันแรงงานแห่งชาติ':'National Labor Day','วันฉัตรมงคล':'Royal Coronation Day',
+    'วันวิสาขบูชา':'Visakha Bucha Day','วันอาสาฬหบูชา':'Asanha Bucha Day',
+    'วันเข้าพรรษา':'Khao Phansa Day','วันออกพรรษา':'Ok Phansa Day',
+    'วันหยุดชดเชย':'Substitute Holiday','ชดเชย':'Substitute',
+    'วันพ่อ':'Fathers Day','วันแม่':'Mothers Day',
+    'วันปิยมหาราช':'Chulalongkorn Day','วันภูมิพล':'King Bhumibol Day',
+    'วันหยุด':'Holiday','วันนักขัตฤกษ์':'Public Holiday',
+    'กิจกรรม':'Activity','การฝึกอบรม':'Training',
+    'ทำความสะอาด':'Cleaning','ห้ามทิ้งขยะ':'No Bin Day',
+    'ตลาด':'Market','ประชุม':'Meeting',
+    'มกราคม':'January','กุมภาพันธ์':'February','มีนาคม':'March',
+    'เมษายน':'April','พฤษภาคม':'May','มิถุนายน':'June',
+    'กรกฎาคม':'July','สิงหาคม':'August','กันยายน':'September',
+    'ตุลาคม':'October','พฤศจิกายน':'November','ธันวาคม':'December',
+    'วันจันทร์':'Monday','วันอังคาร':'Tuesday','วันพุธ':'Wednesday',
+    'วันพฤหัสบดี':'Thursday','วันศุกร์':'Friday','วันเสาร์':'Saturday','วันอาทิตย์':'Sunday',
+    'สวนสนหลวย':'Suan Son Loi','โรงแรม':'Hotel','รีสอร์ท':'Resort',
+    'เจ้าหน้าที่':'Staff','พนักงาน':'Employee','ผู้จัดการ':'Manager',
+  };
+  let result=str;
+  for(const[th,en]of Object.entries(thaiMap)){
+    try{result=result.replace(new RegExp(th,'g'),en);}catch(e){}
+  }
+  result=result.replace(/[^\x00-\x7F]/g,'').replace(/\s+/g,' ').trim();
+  return result||'(see original)';
+}
+function buildMonthPDF(doc,m,isFirst){
+  const pageW=297,pageH=210,marginL=6,marginT=7;
+  const usableW=pageW-marginL*2;
+  const headerH=11,weekdayH=6,legendH=9,trainingH=28;
+  const calH=pageH-marginT*2-headerH-weekdayH-legendH-trainingH;
+  const dim=daysInMonth(m),firstDay=new Date(YEAR,m-1,1).getDay();
+  const weeks=Math.ceil((firstDay+dim)/7);
+  if(!isFirst)doc.addPage();
+  doc.setFillColor(...PDF_COLORS.header.fill);doc.rect(marginL,marginT,usableW,headerH,'F');
+  doc.setTextColor(...PDF_COLORS.header.text);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text(MONTHS_EN[m-1].toUpperCase()+' '+YEAR+'  -  Training Year Plan',marginL+4,marginT+7.5);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.text('Suan Son Loi Resort',pageW-marginL-4,marginT+7.5,{align:'right'});
+  const colW=usableW/7;const wdY=marginT+headerH;
+  const wdNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  for(let c=0;c<7;c++){const cx=marginL+c*colW;const color=c===0?PDF_COLORS.sun:c===6?PDF_COLORS.weekend:PDF_COLORS.header;doc.setFillColor(...color.fill);doc.rect(cx,wdY,colW,weekdayH,'F');doc.setTextColor(...color.text);doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.text(wdNames[c],cx+colW/2,wdY+4,{align:'center'});}
+  const calY=wdY+weekdayH;const rowH=calH/weeks;
+  for(let w=0;w<weeks;w++){
+    for(let c=0;c<7;c++){
+      const cellIdx=w*7+c;const day=cellIdx-firstDay+1;
+      const cx=marginL+c*colW;const cy=calY+w*rowH;
+      doc.setDrawColor(200,210,220);
+      if(day<1||day>dim){doc.setFillColor(...PDF_COLORS.pre.fill);doc.rect(cx,cy,colW,rowH,'FD');continue;}
+      const colorKey=getDayColorKeyPDF(m,day);const color=pdfColor(colorKey);
+      doc.setFillColor(...color.fill);doc.rect(cx,cy,colW,rowH,'FD');
+      doc.setTextColor(...color.text);doc.setFont('helvetica','bold');doc.setFontSize(10);
+      doc.text(String(day),cx+2.5,cy+6);
+      doc.setFont('helvetica','normal');doc.setFontSize(5.5);
+      doc.setTextColor(...color.text.map(v=>Math.min(255,v+50)));
+      doc.text(DAY_SHORT_EN[(firstDay+day-1)%7],cx+colW-2,cy+5.5,{align:'right'});
+      doc.setDrawColor(...color.text.map(v=>Math.min(255,v+90)));
+      doc.line(cx+1,cy+7.5,cx+colW-1,cy+7.5);
+      const k=evKey(m,day),evs=STATE.events[k]||[],note=STATE.notes[k]||'';
+      let lineY=cy+11;const maxLineW=colW-3;
+      for(const ev of evs){
+        if(lineY>cy+rowH-2.5)break;
+        const typeLabel=PDF_TYPE_LABEL[ev.type]||'Other';
+        const safeText=pdfSafe(ev.text);if(!safeText)continue;
+        doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...color.text);
+        doc.text('['+typeLabel+']',cx+1.5,lineY,{maxWidth:maxLineW});lineY+=3.4;
+        if(lineY>cy+rowH-2.5)break;
+        doc.setFont('helvetica','normal');doc.setFontSize(5.2);
+        const textLines=doc.splitTextToSize(safeText,maxLineW);
+        textLines.slice(0,2).forEach(line=>{if(lineY<=cy+rowH-2.5){doc.text(line,cx+1.5,lineY);lineY+=3.6;}});
+        doc.setFontSize(5.5);
+      }
+      if(note&&lineY<cy+rowH-2){
+        doc.setFont('helvetica','italic');doc.setFontSize(5);doc.setTextColor(130,130,130);
+        const safeNote=pdfSafe(note);
+        if(safeNote){const nLines=doc.splitTextToSize('Note: '+safeNote,maxLineW);if(nLines[0])doc.text(nLines[0],cx+1.5,lineY);}
+      }
+    }
+  }
+  const trainY=pageH-marginT-trainingH-legendH;
+  doc.setFillColor(...PDF_COLORS.month.fill);doc.rect(marginL,trainY,usableW,7,'F');
+  doc.setTextColor(...PDF_COLORS.month.text);doc.setFont('helvetica','bold');doc.setFontSize(8);
+  doc.text('Monthly Training & Activities Summary',marginL+4,trainY+5);
+  const trainBodyY=trainY+7,trainBodyH=trainingH-7;
+  doc.setFillColor(...PDF_COLORS.trainSummary.fill);doc.rect(marginL,trainBodyY,usableW,trainBodyH,'F');
+  doc.setDrawColor(210,225,240);doc.rect(marginL,trainBodyY,usableW,trainBodyH,'S');
+  const trainList=STATE.training[m]||[];const cols3=3;const tw=usableW/cols3;
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...PDF_COLORS.trainSummary.text);
+  trainList.forEach((t,i)=>{const col=i%cols3;const rowP=Math.floor(i/cols3);const tx=marginL+col*tw+4;const ty=trainBodyY+5.5+rowP*8;if(ty<trainBodyY+trainBodyH-2){const safeT=pdfSafe(t);doc.text((i+1)+'. '+safeT,tx,ty,{maxWidth:tw-6});}});
+  const legY=pageH-marginT-legendH+1.5;
+  const legItems=[{key:'holiday',label:'Holiday'},{key:'market',label:'Suan Son Loi'},{key:'nobin',label:'No Bin'},{key:'cleaning',label:'Cleaning'},{key:'training',label:'Training'},{key:'activity',label:'Activity'},{key:'other',label:'Other'},{key:'weekend',label:'Sat'},{key:'sun',label:'Sun'}];
+  const legSpacing=usableW/legItems.length;let legX=marginL;doc.setFontSize(5.5);
+  for(const li of legItems){const c=pdfColor(li.key);doc.setFillColor(...c.fill);doc.rect(legX,legY,4,4,'F');doc.setDrawColor(160,170,185);doc.rect(legX,legY,4,4,'S');doc.setTextColor(40,40,40);doc.text(li.label,legX+5,legY+3);legX+=legSpacing;}
+  doc.setFontSize(5.5);doc.setTextColor(170,170,170);
+  doc.text('Training Year Plan 2026  |  '+MONTHS_EN[m-1]+'  |  Suan Son Loi Resort',pageW/2,pageH-2.5,{align:'center'});
+}
+async function exportPDFMonthly(){const{jsPDF}=window.jspdf;if(!jsPDF){toast('ไม่พบ jsPDF',true);return;}const m=curMonth;setPdfProgress(true,`สร้าง PDF — ${MONTHS_EN[m-1]}...`,'กำลังสร้าง...',30);await new Promise(r=>setTimeout(r,50));const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});buildMonthPDF(doc,m,true);setPdfProgress(true,'กำลัง Save...','',95);await new Promise(r=>setTimeout(r,30));doc.save(`Training_Plan_2026_${MONTHS_EN[m-1]}.pdf`);setPdfProgress(false);toast(`Export PDF ${MONTHS_EN[m-1]} เรียบร้อย ✓`);}
+async function exportPDFAllMonths(){const{jsPDF}=window.jspdf;if(!jsPDF){toast('ไม่พบ jsPDF',true);return;}setPdfProgress(true,'สร้าง PDF ทุกเดือน...','กำลังเตรียม...',2);await new Promise(r=>setTimeout(r,50));const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});for(let m=1;m<=12;m++){setPdfProgress(true,'สร้าง PDF...',`${MONTHS_EN[m-1]} (${m}/12)`,Math.round(2+m*8));await new Promise(r=>setTimeout(r,10));buildMonthPDF(doc,m,m===1);}setPdfProgress(true,'กำลัง Save...','',98);await new Promise(r=>setTimeout(r,50));doc.save('Training_Year_Plan_2026_AllMonths.pdf');setPdfProgress(false);toast('Export PDF ทุกเดือน เรียบร้อย ✓');}
+
+
+// ==================== SHARE / QR ====================
+function initShareSection(){
+  const url=window.location.href;
+  const box=document.getElementById('share-link-box');
+  if(box)box.textContent=url;
+  const qrDiv=document.getElementById('qr-container');
+  if(qrDiv&&typeof QRCode!=='undefined'){
+    qrDiv.innerHTML='';
+    try{new QRCode(qrDiv,{text:url,width:140,height:140,colorDark:'#0f1e33',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}
+    catch(e){qrDiv.innerHTML='<div style="padding:20px;text-align:center;font-size:0.75rem;color:var(--text3)">QR Code พร้อมใช้งาน<br>เมื่อเปิดผ่าน Web Server</div>';}
+  } else if(qrDiv){
+    qrDiv.innerHTML='<div style="padding:16px;text-align:center;font-size:0.75rem;color:var(--text3);background:var(--surf2);border-radius:8px;border:1px dashed var(--border);">📱 QR Code จะแสดงเมื่อเปิดผ่าน<br>Web Server หรือ localhost</div>';
+  }
+}
+function copyShareLink(){
+  const url=window.location.href;
+  if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>toast('📋 คัดลอกลิงก์แล้ว ✓')).catch(()=>{fallbackCopy(url);});}
+  else{fallbackCopy(url);}
+}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');toast('📋 คัดลอกลิงก์แล้ว ✓');}catch(e){toast('ไม่สามารถคัดลอกได้',true);}
+  document.body.removeChild(ta);
+}
+async function shareViaOS(){
+  const url=window.location.href;
+  if(navigator.share){try{await navigator.share({title:'Training Plan 2026',text:'Suan Son Loi Resort Training Plan 2026',url});return;}catch(e){}}
+  copyShareLink();
+}
+
+
+
+function openDayStaffView(m,d){
+  const k=evKey(m,d),wd=weekday(m,d);
+  const evs=STATE.events[k]||[];
+  const note=STATE.notes[k]||'';
+  let html=`<div style="font-weight:700;font-size:1rem;color:var(--navy);margin-bottom:4px;">${d} ${MONTHS_TH[m-1]} ${YEAR}</div>`;
+  html+=`<div style="font-size:0.72rem;color:var(--text3);margin-bottom:14px;">${DAYS_TH[wd]}</div>`;
+  if(!evs.length&&!note){html+='<div style="color:var(--text3);font-size:0.82rem;padding:12px 0;text-align:center;">ไม่มีกิจกรรม</div>';}
+  evs.forEach(ev=>{const mt=TYPE_META[ev.type]||TYPE_META.activity;html+=`<div style="display:flex;gap:8px;align-items:center;background:var(--surf2);border-radius:7px;padding:8px 10px;margin-bottom:5px;border:1px solid var(--border2);"><span style="${mt.color};font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;">${mt.icon} ${mt.label}</span><span style="flex:1;font-size:0.8rem;">${ev.text}</span></div>`;});
+  if(note)html+=`<div style="margin-top:8px;padding:8px 10px;background:#f8fafc;border-radius:7px;font-size:0.78rem;color:var(--text2);">📝 ${note}</div>`;
+  // Show in a simple alert-style panel
+  const panel=document.getElementById('staff-day-panel');
+  const body=document.getElementById('staff-day-body');
+  if(panel&&body){body.innerHTML=html;panel.classList.add('open');}
+}
+// ==================== AUTH & ROLES ====================
+const ADMIN_PASSWORD = 'SSL2026';  // ← เปลี่ยนรหัสผ่านที่นี่
+let USER_ROLE = null; // 'admin' or 'staff'
+let loginMode = 'admin';
+
+function setLoginMode(mode) {
+  loginMode = mode;
+  document.getElementById('tab-admin').classList.toggle('active', mode === 'admin');
+  document.getElementById('tab-staff').classList.toggle('active', mode === 'staff');
+  document.getElementById('admin-pass-section').style.display = mode === 'admin' ? 'block' : 'none';
+  const btn = document.getElementById('login-btn');
+  btn.textContent = mode === 'admin' ? '🔐 เข้าสู่ระบบ Admin' : '👀 เข้าดูข้อมูล (Staff)';
+  btn.className = 'login-btn' + (mode === 'staff' ? ' staff-btn' : '');
+  document.getElementById('login-error').textContent = '';
+}
+
+function doLogin() {
+  const err = document.getElementById('login-error');
+  if (loginMode === 'admin') {
+    const pw = document.getElementById('admin-password').value;
+    if (pw !== ADMIN_PASSWORD) {
+      err.textContent = '❌ รหัสผ่านไม่ถูกต้อง';
+      document.getElementById('admin-password').value = '';
+      document.getElementById('admin-password').focus();
+      return;
+    }
+    USER_ROLE = 'admin';
+  } else {
+    USER_ROLE = 'staff';
+  }
+  sessionStorage.setItem('tplan_role', USER_ROLE);
+  err.textContent = '';
+  startApp();
+}
+
+function doLogout() {
+  if (!confirm('ออกจากระบบ?')) return;
+  USER_ROLE = null;
+  sessionStorage.removeItem('tplan_role');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('root').style.display = 'none';
+  document.getElementById('admin-password').value = '';
+}
+
+function applyRoleUI() {
+  const isAdmin = USER_ROLE === 'admin';
+  // Show/hide edit controls
+  const editEls = document.querySelectorAll('.admin-only');
+  editEls.forEach(el => el.style.display = isAdmin ? '' : 'none');
+
+  // Role badge
+  const badge = isAdmin
+    ? '<span class="admin-badge">🔐 Admin</span>'
+    : '<span class="staff-badge">👀 Staff</span>';
+  const bd = document.getElementById('role-badge-desk');
+  if (bd) bd.innerHTML = badge;
+
+  // Disable edit buttons for staff
+  if (!isAdmin) {
+    document.querySelectorAll('.cal-cell, .amc-cell, .mcell').forEach(el => {
+      el.style.cursor = 'default';
+      el.onclick = null;
+    });
+  }
+}
+
+// ==================== CLOUD SYNC (Firebase Realtime Database) ====================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCZuxKdhz795UQg_kR3AnnLtS81a-G43F8",
+  authDomain: "training-plan-2026.firebaseapp.com",
+  databaseURL: "https://training-plan-2026-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "training-plan-2026",
+  storageBucket: "training-plan-2026.firebasestorage.app",
+  messagingSenderId: "99734970166",
+  appId: "1:99734970166:web:e5a5d7fe97a0735c2d1d97"
+};
+
+let firebaseApp = null;
+let firebaseDB = null;
+let syncEnabled = false;
+let realtimeListener = null;
+
+function initFirebase() {
+  try {
+    if (!firebase.apps.length) {
+      firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+    } else {
+      firebaseApp = firebase.app();
+    }
+    firebaseDB = firebase.database();
+    syncEnabled = true;
+    setSyncStatus('ok', 'Firebase พร้อม');
+    return true;
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    setSyncStatus('error', 'Firebase เชื่อมต่อไม่ได้');
+    return false;
+  }
+}
+
+function setSyncStatus(status, msg) {
+  const el = document.getElementById('sync-badge-desk');
+  if (!el) return;
+  el.style.display = 'flex';
+  el.className = 'sync-indicator ' + (status === 'ok' ? 'sync-ok' : status === 'loading' ? 'sync-loading' : 'sync-error');
+  el.innerHTML = status === 'loading' ? `<span class="spin">⟳</span> ${msg}` : (status === 'ok' ? `✅ ${msg}` : `❌ ${msg}`);
+}
+
+async function cloudLoad() {
+  if (!syncEnabled || !firebaseDB) return null;
+  try {
+    setSyncStatus('loading', 'กำลังโหลด...');
+    const snap = await firebaseDB.ref('tplan2026').once('value');
+    const data = snap.val();
+    if (data) {
+      setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}));
+      return data;
+    }
+    setSyncStatus('ok', 'พร้อมใช้งาน');
+    return null;
+  } catch(e) {
+    setSyncStatus('error', 'โหลดไม่สำเร็จ');
+    return null;
+  }
+}
+
+async function cloudSave(state) {
+  if (!syncEnabled || !firebaseDB) { setSyncStatus('error', 'Firebase ไม่พร้อม'); return false; }
+  try {
+    setSyncStatus('loading', 'กำลังบันทึก...');
+    await firebaseDB.ref('tplan2026').set(state);
+    setSyncStatus('ok', 'Saved ' + new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}));
+    return true;
+  } catch(e) {
+    setSyncStatus('error', 'บันทึกไม่สำเร็จ');
+    return false;
+  }
+}
+
+function startRealtimeSync() {
+  if (!syncEnabled || !firebaseDB) return;
+  if (realtimeListener) realtimeListener();
+  realtimeListener = firebaseDB.ref('tplan2026').on('value', snap => {
+    const data = snap.val();
+    if (data) {
+      STATE = data;
+      try { localStorage.setItem('tplan2026', JSON.stringify(STATE)); } catch(e) {}
+      renderAll();
+      setSyncStatus('ok', 'Synced ' + new Date().toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}));
+    }
+  });
+}
+
+async function startApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('root').style.display = 'flex';
+
+  // Init Firebase
+  initFirebase();
+
+  // Load latest data from Firebase
+  const cloudData = await cloudLoad();
+  if (cloudData) {
+    STATE = cloudData;
+    try { localStorage.setItem('tplan2026', JSON.stringify(STATE)); } catch(e) {}
+  }
+
+  applyRoleUI();
+  renderHome();
+  renderMonthly();
+  initShareSection();
+
+  // Staff: listen realtime — auto-update when admin saves
+  if (USER_ROLE === 'staff') {
+    startRealtimeSync();
+  }
+}
+
+// Legacy stubs (ไม่ใช้แล้ว แต่เผื่อมีที่อ้างถึง)
+function saveGistConfig(){ toast('ใช้ Firebase แล้ว ไม่ต้องตั้งค่า Gist'); }
+async function testSync(){
+  toast('🔄 กำลังทดสอบ...');
+  const ok = await cloudSave(STATE);
+  if(ok) toast('✅ Firebase Sync ทำงานได้ปกติ!');
+  else toast('❌ ไม่สามารถเชื่อมต่อได้', true);
+}
+function loadGistConfig(){ /* ไม่ใช้แล้ว */ }
+function updateLoginSyncStatus(){
+  const s = document.getElementById('login-sync-status');
+  const ns = document.getElementById('login-nosync-status');
+  // Firebase ไม่ต้องตั้งค่า — แสดง sync พร้อมเสมอ
+  if(s) s.style.display = 'block';
+  if(ns) ns.style.display = 'none';
+}
+function toggleGistSetup(){ /* ไม่ใช้แล้ว */ }
+function quickSaveGist(){ /* ไม่ใช้แล้ว */ }
+
+// ==================== QR + SHARE ====================
+function initShareSection(){
+  const url=window.location.href;
+  const box=document.getElementById('share-link-box');
+  if(box)box.textContent=url;
+  // Generate QR
+  const qc=document.getElementById('qr-container');
+  if(qc){
+    qc.innerHTML='';
+    try{
+      new QRCode(qc,{text:url,width:160,height:160,colorDark:'#0f1e33',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    }catch(e){qc.textContent='QR Code ไม่สามารถสร้างได้ในโหมดไฟล์ท้องถิ่น';}
+  }
+}
+function copyShareLink(){
+  const url=window.location.href;
+  if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>toast('📋 คัดลอกลิงก์แล้ว ✓'));}
+  else{const t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('📋 คัดลอกลิงก์แล้ว ✓');}
+}
+function shareViaOS(){
+  const url=window.location.href;
+  if(navigator.share){navigator.share({title:'Training Plan 2026 · Suan Son Loi',text:'เปิด Training Plan 2026',url}).catch(()=>{});}
+  else copyShareLink();
+}
+
+// ==================== PWA MANIFEST ====================
+function injectPWAManifest(){
+  const manifest={name:'Training Plan 2026',short_name:'TrainPlan',description:'Training Year Plan 2026 · Suan Son Loi Resort',start_url:window.location.href,display:'standalone',background_color:'#0f1e33',theme_color:'#0f1e33',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230f1e33"/><text y=".9em" font-size="80">📅</text></svg>',sizes:'any',type:'image/svg+xml'}]};
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+  const el=document.getElementById('pwa-manifest');
+  if(el)el.href=URL.createObjectURL(blob);
+}
+
+// ==================== INIT ====================
+loadNotifData();
+rescheduleAll();
+updateNotifBadge();
+updateLoginSyncStatus(); // Firebase พร้อมเสมอ ไม่ต้องตั้งค่า
+injectPWAManifest();
+
+// Check session
+const savedRole = sessionStorage.getItem('tplan_role');
+if(savedRole){USER_ROLE=savedRole;startApp();}
+// else: login screen is already visible
+
+setInterval(()=>{if(getPermission()==='granted'){const now=new Date(),m=now.getMonth()+1,d=now.getDate();if(now.getHours()===notifSettings.time&&now.getMinutes()<5){const evs=STATE.events[evKey(m,d)]||[];const enabled=evs.filter(ev=>notifSettings[ev.type]);if(enabled.length)sendNotification(`📅 วันนี้มีกิจกรรม — ${d} ${MONTHS_TH[m-1]}`,enabled.map(e=>e.text).join(', '),`today-${m}-${d}`);}}},5*60*1000);
+window.addEventListener('resize',()=>{if(curView==='cal')renderMonthly();if(curView==='annual')renderAnnual();});
+</script>
+
+<!-- Staff Read-Only Day Panel -->
+<div class="bs-overlay" id="staff-day-panel" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="bs">
+    <div class="bs-handle"></div>
+    <div class="bs-hdr">
+      <div class="bs-title">📅 รายละเอียดกิจกรรม</div>
+      <div class="bs-sub">👀 Staff — ดูได้อย่างเดียว</div>
+    </div>
+    <div class="bs-body" id="staff-day-body"></div>
+    <div class="bs-foot">
+      <button class="bs-save" onclick="document.getElementById('staff-day-panel').classList.remove('open')" style="flex:1">ปิด</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
